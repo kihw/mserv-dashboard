@@ -34,8 +34,14 @@ Ce tableau de bord est conçu pour centraliser l'accès à tous vos services aut
   - `system.js` - Simulation des métriques système
   - `search.js` - Fonctionnalités de recherche
   - `main.js` - Script d'initialisation
+- `Dockerfile` - Pour construire un conteneur Docker
+- `docker-compose.yml` - Configuration Docker Compose standard
+- `docker-compose.traefik.yml` - Configuration avec Traefik
+- `docker-compose.caddy.yml` - Configuration avec Caddy
 
 ## Installation
+
+### Option 1 : Serveur web traditionnel
 
 1. Clonez ce dépôt sur votre serveur web :
 ```bash
@@ -44,7 +50,46 @@ git clone https://github.com/kihw/mserv-dashboard.git
 
 2. Modifiez le fichier `js/data.js` pour inclure vos propres services et informations.
 
-3. Déployez les fichiers sur votre serveur web ou conteneur.
+3. Déployez les fichiers sur votre serveur web.
+
+### Option 2 : Docker
+
+1. Clonez ce dépôt :
+```bash
+git clone https://github.com/kihw/mserv-dashboard.git
+cd mserv-dashboard
+```
+
+2. Personnalisez vos services dans `js/data.js`.
+
+3. Construisez et démarrez le conteneur :
+```bash
+docker-compose up -d
+```
+
+4. Accédez au tableau de bord sur `http://localhost:8080`
+
+### Option 3 : Avec Traefik
+
+1. Assurez-vous que Traefik est déjà en cours d'exécution avec un réseau nommé `proxy`.
+
+2. Configurez votre domaine dans `docker-compose.traefik.yml`.
+
+3. Démarrez le service :
+```bash
+docker-compose -f docker-compose.traefik.yml up -d
+```
+
+### Option 4 : Avec Caddy
+
+1. Assurez-vous que Caddy est déjà en cours d'exécution avec un réseau approprié.
+
+2. Ajoutez la configuration indiquée dans le fichier `docker-compose.caddy.yml` à votre Caddyfile.
+
+3. Démarrez le service :
+```bash
+docker-compose -f docker-compose.caddy.yml up -d
+```
 
 ## Personnalisation
 
@@ -55,23 +100,58 @@ Vous pouvez personnaliser ce tableau de bord de plusieurs façons :
 - Créer de nouveaux groupes ou catégories de services
 - Connecter à de vraies API système pour des métriques réelles
 
-## Usage avec Caddy
+## Connecter à des API réelles
 
-Voici un exemple de configuration avec Caddy :
+Pour remplacer les données simulées par des données réelles :
 
-```caddy
-home.mserv.wtf {
-    root * /var/www/mserv-dashboard
-    file_server
-    encode gzip
-    log {
-        output file /var/log/caddy/mserv-dashboard.log {
-            roll_size 10MB
-            roll_keep 10
-        }
+1. Modifiez `js/system.js` pour appeler des API externes, par exemple :
+
+```javascript
+async function updateSystemStatus() {
+    try {
+        // Récupérer des données réelles depuis une API
+        const response = await fetch('https://your-monitoring-api.com/status');
+        const data = await response.json();
+        
+        // Mettre à jour l'interface
+        document.querySelector('.weather-temp').textContent = `${data.system.health}%`;
+        // ...
+    } catch (error) {
+        console.error('Erreur lors de la récupération des métriques:', error);
     }
+    
+    setTimeout(updateSystemStatus, 10000);
 }
 ```
+
+2. Pour les statuts de service, utilisez une API comme Uptime Kuma :
+
+```javascript
+async function checkServicesStatus() {
+    try {
+        const response = await fetch('https://status.mserv.wtf/api/status');
+        const statuses = await response.json();
+        
+        // Mettre à jour les statuts des services
+        services.forEach(service => {
+            const serviceStatus = statuses.find(s => s.name === service.name);
+            if (serviceStatus) {
+                service.status = serviceStatus.status;
+            }
+        });
+        
+        generateServiceCards();
+    } catch (error) {
+        console.error('Erreur lors de la vérification des statuts:', error);
+    }
+    
+    setTimeout(checkServicesStatus, 60000);
+}
+```
+
+## Licence
+
+Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 ---
 
