@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mserv-dashboard
+    restart: unless-stopped
+    volumes:
+      - ./js/data.js:/usr/share/nginx/html/js/data.js:ro
+    networks:
+      - caddy_network
+    environment:
+      - TZ=Europe/Paris
+    # Pas besoin d'exposer de port directement avec Caddy
+    # Caddy va rediriger le trafic vers ce conteneur
+
+# Ce réseau doit être celui utilisé par votre instance Caddy
+networks:
+  caddy_network:
+    external: true
+
+# Ajoutez ceci à votre Caddyfile :
+#
+# home.mserv.wtf {
+#     import security_headers
+#     reverse_proxy dashboard:80 {
+#         header_up X-Forwarded-Host {host}
+#         header_up X-Forwarded-Proto {scheme}
+#     }
+#     log {
+#         output file /logs/dashboard.log {
+#             roll_size 10MB
+#             roll_keep 10
+#         }
+#     }
+# }
