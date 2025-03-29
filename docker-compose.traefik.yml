@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mserv-dashboard
+    restart: unless-stopped
+    # Pas besoin d'exposer de port directement avec Traefik
+    # ports:
+    #   - "8080:80"
+    volumes:
+      - ./js/data.js:/usr/share/nginx/html/js/data.js:ro
+    networks:
+      - proxy
+    environment:
+      - TZ=Europe/Paris
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`home.mserv.wtf`)"  # Remplacer par votre domaine
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dashboard.loadbalancer.server.port=80"
+      # Ajoutez des middlewares au besoin (authentification, en-têtes, etc.)
+      - "traefik.http.routers.dashboard.middlewares=securityHeaders@file"
+
+networks:
+  proxy:
+    external: true  # Réseau Traefik existant
