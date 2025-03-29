@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mserv-dashboard
+    restart: unless-stopped
+    ports:
+      - "8080:80"  # Exposer sur le port 8080 (modifiable selon vos besoins)
+    volumes:
+      # Monter le fichier de configuration des services pour faciliter les mises à jour
+      - ./js/data.js:/usr/share/nginx/html/js/data.js:ro
+    networks:
+      - mserv-network
+    environment:
+      - TZ=Europe/Paris  # Fuseau horaire, à ajuster si nécessaire
+    # Healthcheck pour surveillance
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
+# Réseau dédié pour Traefik ou autre reverse proxy
+networks:
+  mserv-network:
+    external: true  # Utiliser un réseau externe existant (comme celui de Traefik/Caddy)
+    # Commentez la ligne ci-dessus et décommentez ci-dessous si vous avez besoin de créer le réseau
+    #   driver: bridge
