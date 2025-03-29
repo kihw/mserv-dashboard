@@ -1,0 +1,31 @@
+# Fichiers système et éditeurs
+.DS_Store
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers temporaires
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Logs et bases de données
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dépendances
+node_modules/
+bower_components/
+
+# Fichiers build
+dist/
+build/
+out/
+
+# Fichiers de sauvegarde
+*.backup
