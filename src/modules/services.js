@@ -10,7 +10,7 @@ export default class ServicesManager {
 
     // Configuration des services
     this.config = {
-      servicesConfigPath: '/config/services.json',
+      servicesConfigPath: '../../config/services.json',
       storageKey: 'mserv_services',
       maxRecentServices: 5,
       categories: [
@@ -51,12 +51,7 @@ export default class ServicesManager {
   async loadServicesConfiguration() {
     try {
       // Tentatives avec différents chemins
-      const configPaths = [
-        '/config/services.json',
-        './config/services.json',
-        '../config/services.json',
-        'config/services.json',
-      ];
+      const configPaths = ['../../config/services.json'];
 
       let serviceConfig = null;
 

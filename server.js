@@ -26,8 +26,8 @@ app.get('/', (req, res) => {
 });
 
 // Gestion des routes de configuration
-app.get('/config/services.json', (req, res) => {
-  res.sendFile(path.join(__dirname, 'config', 'services.json'));
+app.get('../../config/services.json', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', '..', 'config', 'services.json'));
 });
 
 // Gestion des erreurs 404

@@ -52,7 +52,7 @@ export default class FavoritesManager {
    */
   async loadServices() {
     try {
-      const response = await fetch('/config/services.json');
+      const response = await fetch('../../config/services.json');
       const serviceConfig = await response.json();
       this.services = serviceConfig.default_services || [];
     } catch (error) {
