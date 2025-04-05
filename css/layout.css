@@ -1,0 +1,62 @@
+/* Layout principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Barre supérieure */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md, 8px);
+  margin-bottom: 1.5rem;
+}
+
+/* Section météo */
+.weather-card {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md, 8px);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Bannière de statut */
+.system-banner {
+  margin-bottom: 1.5rem;
+}
+
+/* Section des favoris */
+.favorites-section {
+  margin-bottom: 2rem;
+}
+
+/* Grille des favoris */
+.favorites-grid {
+  margin-top: 1rem;
+}
+
+/* Groupes de services */
+#serviceGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Vue de la grille */
+.dashboard {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Pied de page */
+footer {
+  margin-top: auto;
+  padding-top: 2rem;
+}
