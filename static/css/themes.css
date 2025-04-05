@@ -1,0 +1,97 @@
+:root {
+  /* Thème par défaut */
+  --bg-primary: #121212;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #232323;
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --accent-color: #7371fc;
+
+  /* Transitions */
+  --transition-speed: 0.3s;
+}
+
+/* Styles de base du thème */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--transition-speed) ease,
+    color var(--transition-speed) ease;
+}
+
+/* Thème clair */
+.light-theme {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f0f2;
+  --text-primary: #1d1d1f;
+  --text-secondary: #333333;
+  --accent-color: #7371fc;
+}
+
+/* Composants sensibles au thème */
+.category {
+  background-color: var(--bg-secondary);
+  border-color: var(--bg-tertiary);
+  transition: background-color var(--transition-speed) ease;
+}
+
+.service {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  transition: background-color var(--transition-speed) ease,
+    color var(--transition-speed) ease;
+}
+
+.service:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-primary);
+}
+
+/* Boutons et interactions */
+button,
+.button {
+  background-color: var(--accent-color);
+  color: var(--bg-primary);
+  transition: background-color var(--transition-speed) ease,
+    color var(--transition-speed) ease;
+}
+
+button:hover,
+.button:hover {
+  opacity: 0.9;
+}
+
+/* Focus et états actifs */
+*:focus {
+  outline-color: var(--accent-color);
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 5px;
+}
+
+/* Icônes et images */
+img,
+svg {
+  filter: brightness(var(--theme-brightness, 1));
+  transition: filter var(--transition-speed) ease;
+}
+
+.light-theme {
+  --theme-brightness: 1;
+}
+
+.dark-theme {
+  --theme-brightness: 0.8;
+}

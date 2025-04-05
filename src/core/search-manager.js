@@ -73,14 +73,33 @@ export default class SearchManager {
     const serviceDesc = service
       .querySelector(".service-description")
       .textContent.toLowerCase();
+    const serviceCategory = service
+      .closest(".category")
+      .querySelector(".category-header h2")
+      .textContent.toLowerCase();
 
     let score = 0;
 
-    // Critères de scoring
-    if (serviceName === searchTerm) score += 10;
-    if (serviceName.startsWith(searchTerm)) score += 5;
-    if (serviceName.includes(searchTerm)) score += 3;
-    if (serviceDesc.includes(searchTerm)) score += 2;
+    // Critères de scoring améliorés
+    const matches = (text, term) => {
+      const words = term.split(/\s+/);
+      return words.every((word) => text.includes(word));
+    };
+
+    // Correspondance exacte
+    if (serviceName === searchTerm) score += 15;
+
+    // Commence par le terme de recherche
+    if (serviceName.startsWith(searchTerm)) score += 10;
+
+    // Correspondance partielle du nom
+    if (matches(serviceName, searchTerm)) score += 7;
+
+    // Correspondance dans la description
+    if (matches(serviceDesc, searchTerm)) score += 5;
+
+    // Correspondance dans la catégorie
+    if (matches(serviceCategory, searchTerm)) score += 3;
 
     return score;
   }

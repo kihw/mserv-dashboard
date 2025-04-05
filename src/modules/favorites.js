@@ -341,7 +341,210 @@ export default class FavoritesManager {
       }
     }
   }
+  /**
+   * Crée un bouton d'ajout de favoris
+   * @returns {HTMLElement} Bouton d'ajout
+   */
+  createAddFavoriteButton() {
+    const addButton = document.createElement("button");
+    addButton.className = "add-favorite";
+    addButton.setAttribute("aria-label", "Ajouter un favori");
+    addButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+           stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"></path>
+      </svg>
+      <span>Ajouter</span>
+    `;
+    addButton.addEventListener("click", this.openFavoritesEditor.bind(this));
 
+    // Accessibilité
+    addButton.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        this.openFavoritesEditor();
+      }
+    });
+
+    return addButton;
+  }
+
+  /**
+   * Ouvre l'éditeur de favoris avec des animations
+   */
+  openFavoritesEditor() {
+    if (!this.elements.editFavoritesPanel) return;
+
+    // Vider la liste des services
+    const editList = this.elements.editFavoritesPanel.querySelector(
+      "#edit-favorites-list"
+    );
+    if (!editList) return;
+
+    editList.innerHTML = "";
+
+    // Récupérer tous les services
+    const allServices = this.dashboard.servicesManager.services;
+
+    // Créer un fragment pour optimiser le rendu
+    const fragment = document.createDocumentFragment();
+
+    // Grouper les services par catégorie
+    const servicesByCategory = this.groupServicesByCategory(allServices);
+
+    // Ajouter les services par catégorie
+    Object.entries(servicesByCategory).forEach(([category, services]) => {
+      // Créer un en-tête de catégorie
+      const categoryHeader = document.createElement("div");
+      categoryHeader.className = "edit-favorites-category-header";
+      categoryHeader.textContent = this.getCategoryName(category);
+      fragment.appendChild(categoryHeader);
+
+      // Créer un conteneur pour les services de la catégorie
+      const categoryContainer = document.createElement("div");
+      categoryContainer.className = "edit-favorites-category";
+
+      // Ajouter chaque service de la catégorie
+      services.forEach((service) => {
+        const item = this.createFavoriteEditorItem(service);
+        categoryContainer.appendChild(item);
+      });
+
+      fragment.appendChild(categoryContainer);
+    });
+
+    // Ajouter le fragment
+    editList.appendChild(fragment);
+
+    // Afficher le panneau avec une animation
+    this.elements.editFavoritesPanel.classList.add("active");
+    this.elements.editFavoritesPanel.setAttribute("aria-hidden", "false");
+
+    // Gestion du focus et de l'accessibilité
+    const firstItem = editList.querySelector(".edit-favorites-item");
+    if (firstItem) firstItem.focus();
+  }
+
+  /**
+   * Groupe les services par catégorie
+   * @param {Array} services - Liste des services
+   * @returns {Object} Services groupés par catégorie
+   */
+  groupServicesByCategory(services) {
+    return services.reduce((acc, service) => {
+      if (!acc[service.category]) {
+        acc[service.category] = [];
+      }
+      acc[service.category].push(service);
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Récupère le nom lisible d'une catégorie
+   * @param {string} categoryId - ID de la catégorie
+   * @returns {string} Nom de la catégorie
+   */
+  getCategoryName(categoryId) {
+    const categories = {
+      media: "Médias",
+      admin: "Administration",
+      dev: "Développement",
+      tools: "Outils",
+    };
+    return categories[categoryId] || categoryId;
+  }
+
+  /**
+   * Bascule la sélection d'un service dans les favoris
+   * @param {Event} event - Événement de clic
+   */
+  toggleFavoriteSelection(event) {
+    const item = event.currentTarget;
+    const serviceId = item.dataset.serviceId;
+
+    // Animations et retour utilisateur
+    item.classList.add("favorite-toggle-animation");
+    setTimeout(() => {
+      item.classList.remove("favorite-toggle-animation");
+    }, 300);
+
+    if (this.favorites.includes(serviceId)) {
+      // Retirer des favoris
+      this.favorites = this.favorites.filter((id) => id !== serviceId);
+      item.classList.remove("selected");
+      item.setAttribute("aria-pressed", "false");
+    } else {
+      // Ajouter aux favoris
+      if (this.favorites.length < this.config.maxFavorites) {
+        this.favorites.push(serviceId);
+        item.classList.add("selected");
+        item.setAttribute("aria-pressed", "true");
+      } else {
+        // Limite atteinte
+        this.showMaxFavoritesWarning();
+      }
+    }
+
+    // Sauvegarder et mettre à jour
+    this.saveFavorites();
+    this.renderFavorites();
+  }
+
+  /**
+   * Affiche un avertissement élégant si le nombre maximum de favoris est atteint
+   */
+  showMaxFavoritesWarning() {
+    const notification = document.createElement("div");
+    notification.className = "max-favorites-notification";
+    notification.innerHTML = `
+      <div class="notification-content">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+             stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <p>Limite de ${this.config.maxFavorites} favoris atteinte. Retirez un service avant d'en ajouter un nouveau.</p>
+      </div>
+    `;
+
+    // Style et animation
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #f44336;
+      color: white;
+      padding: 15px;
+      border-radius: 4px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: slideIn 0.3s ease-out;
+    `;
+
+    // Ajouter des styles d'animation
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Ajouter et auto-supprimer
+    document.body.appendChild(notification);
+    setTimeout(() => {
+      notification.style.animation = "slideOut 0.3s ease-out";
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
+  }
   /**
    * Gère la suppression d'un favori
    * @param {Event} event - Événement de suppression de favori
