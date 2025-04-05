@@ -1,9 +1,12 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { Suspense, lazy } from 'react';
+import { createRoot } from 'react-dom/client';
 import Config from './config.js';
 import Dashboard from './core/dashboard.js';
 import StorageManager from './utils/storage-manager.js';
 import { detectStorageSupport } from './utils/dom-helpers.js';
+
+// Optional: Lazy load components if needed
+const LoadingFallback = () => <div>Chargement...</div>;
 
 class Application {
   constructor() {
@@ -145,16 +148,8 @@ class Application {
    * Initialise le tableau de bord
    */
   initializeDashboard() {
-    try {
-      this.dashboard = new Dashboard(this);
-      this.dashboard.initialize();
-    } catch (error) {
-      console.error("Erreur lors de l'initialisation du tableau de bord", error);
-      this.logError({
-        message: "Échec de l'initialisation du tableau de bord",
-        error,
-      });
-    }
+    this.dashboard = new Dashboard(this);
+    this.dashboard.initialize();
   }
 
   /**
@@ -163,10 +158,6 @@ class Application {
   setupGlobalEvents() {
     // Gestion du thème
     this.setupThemeEvents();
-
-    // Gestion de la connexion réseau
-    window.addEventListener('online', this.handleOnline.bind(this));
-    window.addEventListener('offline', this.handleOffline.bind(this));
   }
 
   /**
@@ -190,36 +181,6 @@ class Application {
 
     document.documentElement.setAttribute('data-theme', newTheme);
     StorageManager.set('app_theme', newTheme);
-  }
-
-  /**
-   * Gestion de la connexion réseau
-   */
-  handleOnline() {
-    this.showNetworkNotification('Connecté', 'success');
-  }
-
-  /**
-   * Gestion de la déconnexion réseau
-   */
-  handleOffline() {
-    this.showNetworkNotification('Déconnecté', 'error');
-  }
-
-  /**
-   * Affiche une notification réseau
-   * @param {string} message - Message de notification
-   * @param {string} type - Type de notification
-   */
-  showNetworkNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `network-notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 3000);
   }
 
   /**
@@ -248,16 +209,24 @@ class Application {
   }
 }
 
-// Démarrer l'application une fois le DOM chargé
-document.addEventListener('DOMContentLoaded', () => {
-  const root = ReactDOM.createRoot(document.getElementById('root'));
+// Rendu React
+const renderApp = () => {
+  const rootElement = document.getElementById('root');
+  const root = createRoot(rootElement);
+  
   root.render(
     <React.StrictMode>
-      <div id="app">
-        {Application.start()}
-      </div>
+      <Suspense fallback={<LoadingFallback />}>
+        {/* Point de départ principal de React */}
+        <div id="dashboard-root">
+          <Application.start />
+        </div>
+      </Suspense>
     </React.StrictMode>
   );
-});
+};
+
+// Démarrer l'application une fois le DOM chargé
+document.addEventListener('DOMContentLoaded', renderApp);
 
 export default Application;
