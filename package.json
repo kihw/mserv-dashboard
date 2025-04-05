@@ -2,19 +2,18 @@
   "name": "mserv-dashboard",
   "version": "2.1.0",
   "description": "Dashboard centralisé pour services auto-hébergés",
-  "main": "src/main.js",
+  "main": "src/main.jsx",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext js",
-    "format": "prettier --write \"src/**/*.js\"",
+    "lint": "eslint src --ext js,jsx",
+    "format": "prettier --write \"src/**/*.{js,jsx}\"",
     "test": "vitest",
-    "lint:fix": "eslint src --ext js --fix",
-    "prepare": "husky install",
-    "pre-commit": "lint-staged"
+    "lint:fix": "eslint src --ext js,jsx --fix",
+    "prepare": "husky install"
   },
   "keywords": [
     "dashboard",
@@ -25,17 +24,22 @@
   "author": "mserv.wtf Team",
   "license": "MIT",
   "devDependencies": {
-    "@vitejs/plugin-basic-ssl": "^1.0.1",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^8.43.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.3",
     "prettier": "^2.8.8",
-    "vite": "^4.3.9",
-    "vitest": "^0.32.2"
+    "vite": "^6.2.5",
+    "vitest": "^3.1.1"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "check-disk-space": "^3.4.0",
+    "express": "^4.21.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "browserslist": [
     ">0.2%",

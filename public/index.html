@@ -1,0 +1,85 @@
+<body>
+  <div id="root">
+    <!-- Tu peux coller ton HTML ici, en tant que DOM de base manipulé par Dashboard -->
+    <div class="container">
+      <div class="container">
+        <!-- Barre supérieure -->
+        <div class="top-bar">
+          <div class="logo">
+            <i class="fas fa-server"></i>
+            <span>mserv.wtf</span>
+          </div>
+
+          <div class="controls">
+            <div class="search-wrapper">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un service..." />
+            </div>
+
+            <div class="theme-switch" id="themeSwitch">
+              <div class="theme-switch-track">
+                <div class="theme-switch-thumb">
+                  <i class="fas fa-sun" id="themeIcon"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- "Météo" du système -->
+        <div class="weather-card">
+          <div class="weather-details">
+            <div class="weather-detail">
+              <i class="fas fa-microchip"></i>
+              <span>CPU: <span id="cpu-usage">0</span>%</span>
+            </div>
+            <div class="weather-detail">
+              <i class="fas fa-memory"></i>
+              <span>RAM: <span id="ram-usage">0</span>GB/16GB</span>
+            </div>
+            <div class="weather-detail">
+              <i class="fas fa-thermometer-half"></i>
+              <span><span id="temperature">0</span>°C</span>
+            </div>
+          </div>
+        </div>
+        <div class="weather-icon">
+          <i class="fas fa-sun"></i>
+        </div>
+      </div>
+
+      <!-- Bandeau de statut système -->
+      <div class="system-banner">
+        <div class="banner-item status-good">
+          <div class="banner-icon">
+            <i class="fas fa-server"></i>
+          </div>
+          <div class="banner-content">
+            <div class="banner-value"><span id="active-services">0</span>/<span id="total-services">0</span></div>
+            <div class="banner-label">Services actifs</div>
+          </div>
+        </div>
+        <div class="banner-item status-warning">
+          <div class="banner-icon">
+            <i class="fas fa-hdd"></i>
+          </div>
+          <div class="banner-content">
+            <div class="banner-value"><span id="disk-usage">0Gb/0Gb</span></div>
+            <div class="banner-label">Espace disque</div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>&copy; 2025 mserv.wtf | Tableau de bord personnalisé</p>
+        <p class="version">
+          v3.0.0 | <a href="https://github.com/kihw/mserv-dashboard" target="_blank" rel="noopener">GitHub</a>
+        </p>
+      </footer>
+    </div>
+    <div id="services-container" class="services-list"></div>
+    <div id="dashboard-view" class="view-container active"></div>
+  </div>
+
+  <script type="module" src="/src/main.jsx"></script>
+</body>

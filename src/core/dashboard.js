@@ -53,7 +53,7 @@ export default class Dashboard {
 
       // Configuration des événements
       this.setupEvents();
-
+      this.fetchSystemInfo();
       // Initialiser la vue initiale
       this.initializeView();
 
@@ -280,6 +280,33 @@ export default class Dashboard {
 
     // Enregistrer l'erreur
     console.error("Erreur d'initialisation:", error);
+  }
+  /**
+   * Récupère les infos système (RAM totale, disque) depuis l'API serveur
+   */
+  fetchSystemInfo() {
+    fetch('http://localhost:3000/api/system-info')
+      .then((res) => res.json())
+      .then((data) => {
+        // Mettre à jour le DOM RAM totale
+        const ramUsageEl = document.getElementById('ram-usage');
+        if (ramUsageEl) {
+          const currentRamUsed = parseInt(ramUsageEl.textContent) || 0;
+          const totalRamGB = Math.round(data.ramTotal / 1024 ** 3);
+          ramUsageEl.textContent = `${currentRamUsed}GB/${totalRamGB}GB`;
+        }
+
+        // Mettre à jour le DOM espace disque
+        const diskUsageEl = document.getElementById('disk-usage');
+        if (diskUsageEl) {
+          const freeGB = (data.diskFree / 1024 ** 3).toFixed(1);
+          const totalGB = (data.diskTotal / 1024 ** 3).toFixed(1);
+          diskUsageEl.textContent = `${freeGB}GB/${totalGB}GB`;
+        }
+      })
+      .catch((err) => {
+        console.warn('[Dashboard] Impossible de récupérer les infos système :', err);
+      });
   }
 
   /**

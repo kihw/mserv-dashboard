@@ -2,9 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <meta name="description" content="Tableau de bord centralisé pour services auto-hébergés" />
-    <meta name="author" content="mserv.wtf Team" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>mserv.wtf - Tableau de Bord</title>
 
     <!-- Favicon -->
@@ -27,114 +25,7 @@
     <link rel="stylesheet" href="/static/css/themes.css" />
   </head>
   <body>
-    <div class="dashboard-container">
-      <header class="dashboard-header">
-        <div class="logo">
-          <img src="/static/favicon.svg" alt="mserv.wtf Logo" />
-          <h1>mserv.wtf</h1>
-        </div>
-
-        <nav class="dashboard-nav">
-          <div class="search-wrapper">
-            <input
-              type="search"
-              id="searchInput"
-              class="search-input"
-              placeholder="Rechercher un service..."
-              aria-label="Recherche de services"
-            />
-            <i class="fas fa-search search-icon"></i>
-          </div>
-
-          <div class="theme-toggle">
-            <button id="theme-toggle" aria-label="Changer de thème">
-              <i class="fas fa-adjust" id="theme-icon"></i>
-            </button>
-          </div>
-        </nav>
-      </header>
-
-      <main class="dashboard-content">
-        <section class="system-overview">
-          <div class="system-status">
-            <div class="status-card health-card">
-              <div class="status-icon">
-                <i class="fas fa-heartbeat"></i>
-              </div>
-              <div class="status-details">
-                <h2>Système en bonne santé</h2>
-                <p>Tous les services sont opérationnels</p>
-              </div>
-            </div>
-
-            <div class="status-card resource-card">
-              <div class="status-icon">
-                <i class="fas fa-server"></i>
-              </div>
-              <div class="status-details">
-                <h2>Ressources</h2>
-                <ul>
-                  <li>CPU: <span id="cpu-usage">12</span>%</li>
-                  <li>RAM: <span id="ram-usage">4.2</span>/16 GB</li>
-                  <li>Temp: <span id="temperature">34</span>°C</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="favorites">
-          <div class="section-header">
-            <h2>Favoris</h2>
-            <button id="edit-favorites-btn" class="btn-edit-favorites"><i class="fas fa-cog"></i> Personnaliser</button>
-          </div>
-          <div id="favorites-grid" class="favorites-grid">
-            <!-- Favoris générés dynamiquement -->
-          </div>
-        </section>
-
-        <section class="services">
-          <div class="section-header">
-            <h2>Tous les services</h2>
-            <div class="view-controls">
-              <button id="grid-view-toggle" class="view-toggle active">
-                <i class="fas fa-th-large"></i>
-              </button>
-              <button id="list-view-toggle" class="view-toggle">
-                <i class="fas fa-list"></i>
-              </button>
-            </div>
-          </div>
-          <div id="services-container" class="services-container grid-view">
-            <!-- Services organisés par catégories -->
-          </div>
-        </section>
-      </main>
-
-      <aside id="quick-actions" class="quick-actions">
-        <button class="quick-action" aria-label="Ajouter un service">
-          <i class="fas fa-plus"></i>
-        </button>
-        <button class="quick-action" aria-label="Paramètres">
-          <i class="fas fa-cog"></i>
-        </button>
-      </aside>
-
-      <footer class="dashboard-footer">
-        <div class="footer-content">
-          <p>&copy; 2025 mserv.wtf | Tableau de bord personnalisé</p>
-          <nav class="footer-links">
-            <a href="https://github.com/kihw/mserv-dashboard" target="_blank" rel="noopener noreferrer"> GitHub </a>
-            <span class="version">v3.0.0</span>
-          </nav>
-        </div>
-      </footer>
-    </div>
-
-    <!-- Modals et overlays à ajouter dynamiquement -->
-    <div id="modals-container" class="modals-container"></div>
-
-    <!-- Scripts -->
-    <script type="module" src="/src/main.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
