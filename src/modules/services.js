@@ -43,46 +43,65 @@ export default class ServicesManager {
     }
   }
 
-  /**
-   * Configuration des écouteurs d'événements
-   */
-  setupEventListeners() {
-    // Ajouter des gestionnaires d'événements si nécessaire
-    // Par exemple, écoute des événements de recherche, de filtrage, etc.
-  }
-
-  /**
-   * Charge la configuration des services à partir du fichier JSON
-   */
   async loadServicesConfiguration() {
     try {
-      // Charger le fichier de configuration
-      const response = await fetch(this.config.servicesConfigPath);
-      if (!response.ok) {
-        throw new Error('Impossible de charger la configuration des services');
+      // Allow retry with alternative fallback paths
+      const configPaths = ['/config/services.json', '/services.json', 'config/services.json', './config/services.json'];
+
+      let response;
+      for (const path of configPaths) {
+        try {
+          response = await fetch(path);
+          if (response.ok) break;
+        } catch (err) {
+          console.warn(`Failed to fetch from ${path}:`, err);
+        }
       }
+
+      if (!response || !response.ok) {
+        throw new Error('Could not load services configuration');
+      }
+
       const serviceConfig = await response.json();
 
-      // Fusionner les services par défaut et personnalisés
-      this.services = [...serviceConfig.default_services, ...this.loadCustomServices(serviceConfig.custom_services)];
+      // Merge default and custom services
+      this.services = [
+        ...(serviceConfig.default_services || []),
+        ...(this.loadCustomServices(serviceConfig.custom_services) || []),
+      ];
 
-      // Indexer les services pour une recherche rapide
+      // Fallback to default if no services
+      if (this.services.length === 0) {
+        this.services = [
+          {
+            id: 'placeholder',
+            name: 'No Services',
+            description: 'No services could be loaded',
+            url: '#',
+            icon: 'warning',
+            category: 'tools',
+          },
+        ];
+      }
+
+      // Index services
       this.indexServices();
     } catch (error) {
-      console.error('Erreur lors du chargement de la configuration des services', error);
-      // Charger une configuration minimale en cas d'erreur
-      this.services = [];
+      console.error('Error loading services configuration:', error);
+
+      // Set a default placeholder service
+      this.services = [
+        {
+          id: 'placeholder',
+          name: 'Configuration Error',
+          description: 'Could not load services. Check configuration.',
+          url: '#',
+          icon: 'alert-triangle',
+          category: 'tools',
+        },
+      ];
     }
   }
-
-  /**
-   * Indexe les services pour une recherche rapide
-   */
-  indexServices() {
-    // Méthode pour optimiser la recherche de services si nécessaire
-    // Par exemple, créer un index par ID ou catégorie
-  }
-
   /**
    * Rend les services dans l'interface
    */

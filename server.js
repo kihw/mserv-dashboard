@@ -17,6 +17,9 @@ app.use((req, res, next) => {
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname)));
 
+// Servir les fichiers de configuration
+app.use('/config', express.static(path.join(__dirname, 'config')));
+
 // Route principale
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

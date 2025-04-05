@@ -26,6 +26,13 @@ export default defineConfig({
     fs: {
       allow: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'static'), path.resolve(__dirname, 'config')],
     },
+    // Add middleware to serve config files
+    middleware: (app) => {
+      app.use('/config', (req, res, next) => {
+        const filePath = path.resolve(__dirname, 'config', req.url.slice(1));
+        res.sendFile(filePath);
+      });
+    },
   },
   build: {
     outDir: 'dist',
