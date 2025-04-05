@@ -1,42 +1,97 @@
 /**
- * Gestionnaire de thème avancé
+ * Gestionnaire de thème avancé pour mserv.wtf
  */
-import config from '../config.js';
-import StorageManager from '../utils/storage-manager.js';
-
 export default class ThemeManager {
-  constructor() {
+  /**
+   * Constructeur du gestionnaire de thème
+   * @param {Dashboard} dashboard - Instance du tableau de bord
+   */
+  constructor(dashboard) {
+    this.dashboard = dashboard;
+
     // Configuration des thèmes
-    this.config = config.themes;
+    this.themes = {
+      light: {
+        primary: '#f5f5f7',
+        secondary: '#ffffff',
+        text: '#1d1d1f',
+        accent: '#7371fc',
+      },
+      dark: {
+        primary: '#121212',
+        secondary: '#1a1a1a',
+        text: '#ffffff',
+        accent: '#7371fc',
+      },
+    };
 
     // Clé de stockage pour le thème
     this.storageKey = 'mserv_theme_preference';
+
+    // Options de thème
+    this.options = {
+      systemPreference: false,
+      reduceMotion: false,
+      contrastMode: false,
+    };
 
     // Écouteurs d'événements
     this.listeners = new Set();
   }
 
   /**
-   * Initialise le gestionnaire de thème
+   * Initialisation du gestionnaire de thème
    */
   initialize() {
-    // Appliquer le thème enregistré ou par défaut
-    this.applyTheme(this.getCurrentTheme());
+    // Charger les préférences de l'utilisateur
+    this.loadUserPreferences();
 
-    // Configuration des événements de changement de thème
-    this.setupThemeEvents();
+    // Configurer les événements système
+    this.setupSystemEvents();
+
+    // Appliquer le thème initial
+    this.applyTheme(this.getCurrentTheme());
   }
 
   /**
-   * Configuration des événements de thème
+   * Charge les préférences de l'utilisateur
    */
-  setupThemeEvents() {
-    // Écouter les changements système de préférence de couleur
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (this.getCurrentTheme() === 'system') {
-        this.applyTheme('system');
+  loadUserPreferences() {
+    try {
+      const storedPreferences = localStorage.getItem('theme_preferences');
+      if (storedPreferences) {
+        const preferences = JSON.parse(storedPreferences);
+        this.options = { ...this.options, ...preferences };
       }
-    });
+    } catch (error) {
+      console.warn('Erreur lors du chargement des préférences de thème', error);
+    }
+  }
+
+  /**
+   * Configure les événements système liés au thème
+   */
+  setupSystemEvents() {
+    // Écouter les changements de préférence de couleur système
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', this.handleSystemThemeChange.bind(this));
+
+    // Configurer le bouton de changement de thème
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => this.toggleTheme());
+    }
+  }
+
+  /**
+   * Gère les changements de thème système
+   * @param {MediaQueryListEvent} event - Événement de changement de média
+   */
+  handleSystemThemeChange(event) {
+    if (this.options.systemPreference) {
+      const newTheme = event.matches ? 'dark' : 'light';
+      this.applyTheme(newTheme);
+    }
   }
 
   /**
@@ -44,35 +99,55 @@ export default class ThemeManager {
    * @returns {string} Thème actuel
    */
   getCurrentTheme() {
-    return StorageManager.get(this.storageKey, this.config.default);
+    // Vérifier les préférences stockées
+    const storedTheme = localStorage.getItem(this.storageKey);
+
+    // Si le système est en mode préférence système
+    if (this.options.systemPreference) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    // Utiliser le thème stocké ou le thème par défaut
+    return storedTheme || 'dark';
   }
 
-  applyTheme(theme) {
-    // Gérer le thème système
-    if (theme === 'system') {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  /**
+   * Applique un thème
+   * @param {string} themeName - Nom du thème
+   */
+  applyTheme(themeName) {
+    // Validité du thème
+    if (!this.themes[themeName]) {
+      console.warn(`Thème non valide : ${themeName}. Utilisation du thème par défaut.`);
+      themeName = 'dark';
     }
 
-    // Appliquer les classes au document
-    document.documentElement.classList.remove('light-theme', 'dark-theme');
-    document.documentElement.classList.add(`${theme}-theme`);
+    // Mettre à jour les variables CSS
+    const themeConfig = this.themes[themeName];
+    Object.entries(themeConfig).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(`--color-${key}`, value);
+    });
 
-    // Appliquer les variables CSS
-    const themeConfig = this.config[theme];
-    if (themeConfig) {
-      document.documentElement.style.setProperty('--bg-primary', themeConfig.bgPrimary);
-      document.documentElement.style.setProperty('--bg-secondary', themeConfig.bgSecondary);
-      document.documentElement.style.setProperty('--bg-tertiary', themeConfig.bgTertiary);
-      document.documentElement.style.setProperty('--text-primary', themeConfig.textPrimary);
-      document.documentElement.style.setProperty('--text-secondary', themeConfig.textSecondary);
-      document.documentElement.style.setProperty('--accent-color', themeConfig.accentColor);
+    // Mettre à jour les attributs du document
+    document.documentElement.setAttribute('data-theme', themeName);
+    document.body.classList.toggle('dark-theme', themeName === 'dark');
+    document.body.classList.toggle('light-theme', themeName === 'light');
+
+    // Gérer les réductions de mouvement
+    if (this.options.reduceMotion) {
+      document.body.classList.add('reduce-motion');
     }
 
-    // Sauvegarder la préférence
-    localStorage.setItem(this.storageKey, theme);
+    // Gérer le mode contraste élevé
+    if (this.options.contrastMode) {
+      document.body.classList.add('high-contrast');
+    }
+
+    // Sauvegarder le thème
+    localStorage.setItem(this.storageKey, themeName);
 
     // Notifier les écouteurs
-    this.notifyListeners(theme);
+    this.notifyThemeChange(themeName);
   }
 
   /**
@@ -80,34 +155,43 @@ export default class ThemeManager {
    */
   toggleTheme() {
     const currentTheme = this.getCurrentTheme();
-    const themes = ['light', 'dark', 'system'];
-    const currentIndex = themes.indexOf(currentTheme);
-    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-    this.applyTheme(nextTheme);
+    // Désactiver la préférence système si active
+    this.options.systemPreference = false;
+
+    this.applyTheme(newTheme);
+  }
+
+  /**
+   * Configure les options de thème
+   * @param {Object} newOptions - Nouvelles options de thème
+   */
+  setThemeOptions(newOptions) {
+    this.options = { ...this.options, ...newOptions };
+
+    // Sauvegarder les préférences
+    localStorage.setItem('theme_preferences', JSON.stringify(this.options));
+
+    // Réappliquer le thème avec les nouvelles options
+    this.applyTheme(this.getCurrentTheme());
   }
 
   /**
    * Ajoute un écouteur de changement de thème
-   * @param {Function} listener - Fonction à appeler lors du changement de thème
+   * @param {Function} listener - Fonction de rappel
+   * @returns {Function} Fonction pour supprimer l'écouteur
    */
   addThemeListener(listener) {
     this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
   /**
-   * Retire un écouteur de changement de thème
-   * @param {Function} listener - Fonction à retirer
-   */
-  removeThemeListener(listener) {
-    this.listeners.delete(listener);
-  }
-
-  /**
-   * Notifie tous les écouteurs
+   * Notifie les écouteurs du changement de thème
    * @param {string} newTheme - Nouveau thème
    */
-  notifyListeners(newTheme) {
+  notifyThemeChange(newTheme) {
     this.listeners.forEach((listener) => {
       try {
         listener(newTheme);
@@ -115,5 +199,29 @@ export default class ThemeManager {
         console.error('Erreur dans un écouteur de thème', error);
       }
     });
+
+    // Émettre un événement via le gestionnaire d'événements
+    if (this.dashboard.modules.events) {
+      this.dashboard.modules.events.emit('theme:change', newTheme);
+    }
+  }
+
+  /**
+   * Réinitialise les paramètres de thème
+   */
+  reset() {
+    // Réinitialiser les options
+    this.options = {
+      systemPreference: false,
+      reduceMotion: false,
+      contrastMode: false,
+    };
+
+    // Supprimer les préférences stockées
+    localStorage.removeItem(this.storageKey);
+    localStorage.removeItem('theme_preferences');
+
+    // Appliquer le thème par défaut
+    this.applyTheme('dark');
   }
 }

@@ -2,19 +2,18 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Tableau de bord pour les services mserv.wtf" />
-    <meta name="author" content="kihw" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="description" content="Tableau de bord centralisé pour services auto-hébergés" />
+    <meta name="author" content="mserv.wtf Team" />
     <title>mserv.wtf - Tableau de Bord</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
 
     <!-- Fonts -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -25,163 +24,115 @@
     <link rel="stylesheet" href="/static/css/components.css" />
     <link rel="stylesheet" href="/static/css/layout.css" />
     <link rel="stylesheet" href="/static/css/responsive.css" />
+    <link rel="stylesheet" href="/static/css/themes.css" />
   </head>
   <body>
-    <div class="container">
-      <!-- Barre supérieure -->
-      <div class="top-bar">
+    <div class="dashboard-container">
+      <header class="dashboard-header">
         <div class="logo">
-          <i class="fas fa-server"></i>
-          <span>mserv.wtf</span>
+          <img src="/static/favicon.svg" alt="mserv.wtf Logo" />
+          <h1>mserv.wtf</h1>
         </div>
 
-        <div class="controls">
+        <nav class="dashboard-nav">
           <div class="search-wrapper">
+            <input
+              type="search"
+              id="searchInput"
+              class="search-input"
+              placeholder="Rechercher un service..."
+              aria-label="Recherche de services"
+            />
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un service..." />
           </div>
 
-          <div class="theme-switch" id="themeSwitch">
-            <div class="theme-switch-track">
-              <div class="theme-switch-thumb">
-                <i class="fas fa-sun" id="themeIcon"></i>
+          <div class="theme-toggle">
+            <button id="theme-toggle" aria-label="Changer de thème">
+              <i class="fas fa-adjust" id="theme-icon"></i>
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <main class="dashboard-content">
+        <section class="system-overview">
+          <div class="system-status">
+            <div class="status-card health-card">
+              <div class="status-icon">
+                <i class="fas fa-heartbeat"></i>
+              </div>
+              <div class="status-details">
+                <h2>Système en bonne santé</h2>
+                <p>Tous les services sont opérationnels</p>
+              </div>
+            </div>
+
+            <div class="status-card resource-card">
+              <div class="status-icon">
+                <i class="fas fa-server"></i>
+              </div>
+              <div class="status-details">
+                <h2>Ressources</h2>
+                <ul>
+                  <li>CPU: <span id="cpu-usage">12</span>%</li>
+                  <li>RAM: <span id="ram-usage">4.2</span>/16 GB</li>
+                  <li>Temp: <span id="temperature">34</span>°C</li>
+                </ul>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- "Météo" du système -->
-      <div class="weather-card">
-        <div class="weather-info">
-          <div class="weather-title">Système en bonne santé</div>
-          <div class="weather-desc">Tous les services sont opérationnels</div>
-          <div class="weather-temp">100%</div>
-          <div class="weather-details">
-            <div class="weather-detail">
-              <i class="fas fa-microchip"></i>
-              <span>CPU: <span id="cpu-usage">12</span>%</span>
+        <section class="favorites">
+          <div class="section-header">
+            <h2>Favoris</h2>
+            <button id="edit-favorites-btn" class="btn-edit-favorites"><i class="fas fa-cog"></i> Personnaliser</button>
+          </div>
+          <div id="favorites-grid" class="favorites-grid">
+            <!-- Favoris générés dynamiquement -->
+          </div>
+        </section>
+
+        <section class="services">
+          <div class="section-header">
+            <h2>Tous les services</h2>
+            <div class="view-controls">
+              <button id="grid-view-toggle" class="view-toggle active">
+                <i class="fas fa-th-large"></i>
+              </button>
+              <button id="list-view-toggle" class="view-toggle">
+                <i class="fas fa-list"></i>
+              </button>
             </div>
-            <div class="weather-detail">
-              <i class="fas fa-memory"></i>
-              <span>RAM: <span id="ram-usage">4.2</span>GB/16GB</span>
-            </div>
-            <div class="weather-detail">
-              <i class="fas fa-thermometer-half"></i>
-              <span><span id="temperature">34</span>°C</span>
-            </div>
           </div>
-        </div>
-        <div class="weather-icon">
-          <i class="fas fa-sun"></i>
-        </div>
-      </div>
+          <div id="services-container" class="services-container grid-view">
+            <!-- Services organisés par catégories -->
+          </div>
+        </section>
+      </main>
 
-      <!-- Bandeau de statut système -->
-      <div class="system-banner">
-        <div class="banner-item status-good">
-          <div class="banner-icon">
-            <i class="fas fa-server"></i>
-          </div>
-          <div class="banner-content">
-            <div class="banner-value"><span id="active-services">18</span>/<span id="total-services">18</span></div>
-            <div class="banner-label">Services actifs</div>
-          </div>
-        </div>
-        <div class="banner-item status-warning">
-          <div class="banner-icon">
-            <i class="fas fa-hdd"></i>
-          </div>
-          <div class="banner-content">
-            <div class="banner-value"><span id="disk-usage">75</span>%</div>
-            <div class="banner-label">Espace disque</div>
-          </div>
-        </div>
-        <div class="banner-item">
-          <div class="banner-icon">
-            <i class="fas fa-network-wired"></i>
-          </div>
-          <div class="banner-content">
-            <div class="banner-value"><span id="network-speed">12.4</span> MB/s</div>
-            <div class="banner-label">Réseau</div>
-          </div>
-        </div>
-        <div class="banner-item">
-          <div class="banner-icon">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <div class="banner-content">
-            <div class="banner-value">Sécurisé</div>
-            <div class="banner-label">Firewall actif</div>
-          </div>
-        </div>
-      </div>
+      <aside id="quick-actions" class="quick-actions">
+        <button class="quick-action" aria-label="Ajouter un service">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button class="quick-action" aria-label="Paramètres">
+          <i class="fas fa-cog"></i>
+        </button>
+      </aside>
 
-      <!-- Favoris -->
-      <div class="section-header">
-        <div class="section-title">
-          <i class="fas fa-star"></i>
-          <span>Favoris</span>
+      <footer class="dashboard-footer">
+        <div class="footer-content">
+          <p>&copy; 2025 mserv.wtf | Tableau de bord personnalisé</p>
+          <nav class="footer-links">
+            <a href="https://github.com/kihw/mserv-dashboard" target="_blank" rel="noopener noreferrer"> GitHub </a>
+            <span class="version">v3.0.0</span>
+          </nav>
         </div>
-        <div id="app">
-          <input type="text" id="search" class="search-input" title="Search services" placeholder="Rechercher un service...">
-          <div id="theme-toggle"></div>
-          <div id="favorites-list"></div>
-          <div class="categories-grid"></div>
-        </div>
-        <div class="section-actions">
-          <button type="button" class="action-button" id="editFavoritesBtn1">
-            <i class="fas fa-cog"></i>
-            <span>Personnaliser</span>
-          </button>
-        </div>
-      <div class="favorites-section">
-        <div class="section-header">
-          <div class="section-title">
-            <i class="fas fa-star"></i>
-            <span>Favoris</span>
-          </div>
-          <div class="section-actions">
-            <button class="action-button" id="editFavoritesBtn">
-              <i class="fas fa-cog"></i>
-              <span>Personnaliser</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="favorites-grid" id="favoritesGrid">
-          <!-- Générés dynamiquement depuis services.js -->
-        </div>
-      </div>
-
-      <!-- Groupes de services -->
-      <div id="serviceGroups">
-        <!-- Générés dynamiquement depuis services.js -->
-      </div>
-
-      <!-- Tous les services (vue en grille) -->
-      <div class="section-header">
-        <div class="section-title">
-          <i class="fas fa-th-large"></i>
-          <span>Tous les services</span>
-        </div>
-        <div class="section-actions">
-          <button class="action-button" id="viewToggle">
-            <i class="fas fa-list"></i>
-            <span>Vue liste</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="dashboard" id="servicesGrid">
-        <!-- Générés dynamiquement depuis services.js -->
-      </div>
-
-      <footer>
-        <p>&copy; 2025 mserv.wtf | Tableau de bord personnalisé</p>
-        <p class="version">v3.0.0 | <a href="https://github.com/kihw/mserv-dashboard" target="_blank">GitHub</a></p>
       </footer>
     </div>
+
+    <!-- Modals et overlays à ajouter dynamiquement -->
+    <div id="modals-container" class="modals-container"></div>
 
     <!-- Scripts -->
     <script type="module" src="/src/main.js"></script>

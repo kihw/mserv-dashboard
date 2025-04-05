@@ -1,117 +1,179 @@
-/* Media Queries */
-@media (max-width: 1200px) {
-    .weather-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .weather-icon {
-        margin-top: 1rem;
-    }
-    
-    .weather-details {
-        justify-content: center;
-    }
+/* Responsive Design pour mserv.wtf Dashboard */
+
+/* Breakpoints */
+:root {
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-xxl: 1400px;
 }
 
-@media (max-width: 1024px) {
-    .dashboard {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-    
-    .service-card[data-priority="high"] {
-        grid-column: span 1;
-    }
+/* Petits écrans (téléphones) */
+@media (max-width: 576px) {
+  .dashboard-container {
+    padding: 0.5rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .dashboard-nav {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .system-overview,
+  .services-container,
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .quick-actions {
+    flex-direction: row;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+
+  .quick-action {
+    width: 40px;
+    height: 40px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
 }
 
-@media (max-width: 768px) {
-    .top-bar {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    
-    .controls {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .search-wrapper {
-        width: 60%;
-    }
-    
-    .system-banner {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .banner-item:nth-child(2)::after {
-        display: none;
-    }
-    
-    .weather-details {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: flex-start;
-    }
-    
-    .weather-card {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .weather-icon {
-        align-self: center;
-        margin-top: 1rem;
-    }
-    
-    .dashboard {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-    
-    .group-body {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
+/* Écrans moyens (tablettes) */
+@media (min-width: 577px) and (max-width: 992px) {
+  .dashboard-header {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .dashboard-nav {
+    flex-grow: 1;
+    justify-content: space-between;
+  }
+
+  .system-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .favorites-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .services-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-@media (max-width: 480px) {
-    .favorites-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .system-banner {
-        grid-template-columns: 1fr;
-    }
-    
-    .banner-item::after {
-        display: none;
-    }
-    
-    .search-wrapper {
-        width: 100%;
-    }
-    
-    .controls {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .dashboard {
-        grid-template-columns: 1fr;
-    }
-    
-    .group-body {
-        grid-template-columns: 1fr;
-    }
-    
-    .group-header {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: flex-start;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: flex-start;
-    }
+/* Grands écrans (desktop) */
+@media (min-width: 993px) and (max-width: 1200px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .system-overview {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .favorites-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .services-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Écrans très larges */
+@media (min-width: 1201px) {
+  .dashboard-container {
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .system-overview {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .favorites-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .services-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Améliorations d'accessibilité et support des modes de réduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Orientation de l'appareil */
+@media (orientation: landscape) and (max-width: 992px) {
+  .dashboard-header {
+    flex-direction: row;
+  }
+
+  .dashboard-nav {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Impression */
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  .dashboard-header,
+  .quick-actions,
+  .theme-toggle {
+    display: none;
+  }
+
+  .dashboard-container {
+    display: block;
+    padding: 0;
+  }
+
+  .service-card {
+    page-break-inside: avoid;
+    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+  }
 }
