@@ -10,9 +10,15 @@ export default class ServicesManager {
 
     // Configuration des services
     this.config = {
-      servicesConfigPath: "/config/services.json",
-      storageKey: "mserv_services",
+      servicesConfigPath: '/config/services.json',
+      storageKey: 'mserv_services',
       maxRecentServices: 5,
+      categories: [
+        { id: 'media', name: 'Médias', icon: 'play-circle' },
+        { id: 'admin', name: 'Administration', icon: 'settings' },
+        { id: 'dev', name: 'Développement', icon: 'code' },
+        { id: 'tools', name: 'Outils', icon: 'tool' },
+      ],
     };
 
     // Historique des services récents
@@ -38,6 +44,14 @@ export default class ServicesManager {
   }
 
   /**
+   * Configuration des écouteurs d'événements
+   */
+  setupEventListeners() {
+    // Ajouter des gestionnaires d'événements si nécessaire
+    // Par exemple, écoute des événements de recherche, de filtrage, etc.
+  }
+
+  /**
    * Charge la configuration des services à partir du fichier JSON
    */
   async loadServicesConfiguration() {
@@ -45,26 +59,149 @@ export default class ServicesManager {
       // Charger le fichier de configuration
       const response = await fetch(this.config.servicesConfigPath);
       if (!response.ok) {
-        throw new Error("Impossible de charger la configuration des services");
+        throw new Error('Impossible de charger la configuration des services');
       }
       const serviceConfig = await response.json();
 
       // Fusionner les services par défaut et personnalisés
-      this.services = [
-        ...serviceConfig.default_services,
-        ...this.loadCustomServices(serviceConfig.custom_services),
-      ];
+      this.services = [...serviceConfig.default_services, ...this.loadCustomServices(serviceConfig.custom_services)];
 
       // Indexer les services pour une recherche rapide
       this.indexServices();
     } catch (error) {
-      console.error(
-        "Erreur lors du chargement de la configuration des services",
-        error
-      );
+      console.error('Erreur lors du chargement de la configuration des services', error);
       // Charger une configuration minimale en cas d'erreur
       this.services = [];
     }
+  }
+
+  /**
+   * Indexe les services pour une recherche rapide
+   */
+  indexServices() {
+    // Méthode pour optimiser la recherche de services si nécessaire
+    // Par exemple, créer un index par ID ou catégorie
+  }
+
+  /**
+   * Rend les services dans l'interface
+   */
+  renderServices() {
+    const categoriesGrid = document.querySelector('.categories-grid');
+    if (!categoriesGrid) return;
+
+    // Vider le conteneur existant
+    categoriesGrid.innerHTML = '';
+
+    // Grouper les services par catégorie
+    const servicesByCategory = this.groupServicesByCategory();
+
+    // Créer les sections de catégories
+    Object.entries(servicesByCategory).forEach(([categoryId, services]) => {
+      const category = this.createCategoryElement(categoryId, services);
+      categoriesGrid.appendChild(category);
+    });
+  }
+
+  /**
+   * Groupe les services par catégorie
+   * @returns {Object} Services groupés par catégorie
+   */
+  groupServicesByCategory() {
+    return this.services.reduce((acc, service) => {
+      if (!acc[service.category]) {
+        acc[service.category] = [];
+      }
+      acc[service.category].push(service);
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Crée un élément de catégorie
+   * @param {string} categoryId - ID de la catégorie
+   * @param {Array} services - Services de la catégorie
+   * @returns {HTMLElement} Élément de catégorie
+   */
+  createCategoryElement(categoryId, services) {
+    const category = document.createElement('section');
+    category.className = 'category';
+    category.dataset.categoryId = categoryId;
+
+    // En-tête de catégorie
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `
+      <h2>${this.getCategoryName(categoryId)}</h2>
+    `;
+    category.appendChild(header);
+
+    // Liste des services
+    const servicesList = document.createElement('div');
+    servicesList.className = 'services';
+
+    services.forEach((service) => {
+      const serviceElement = this.createServiceElement(service);
+      servicesList.appendChild(serviceElement);
+    });
+
+    category.appendChild(servicesList);
+
+    return category;
+  }
+
+  /**
+   * Crée un élément de service
+   * @param {Object} service - Informations du service
+   * @returns {HTMLElement} Élément de service
+   */
+  createServiceElement(service) {
+    const serviceLink = document.createElement('a');
+    serviceLink.href = `https://${service.url}`;
+    serviceLink.className = 'service';
+    serviceLink.target = '_blank';
+    serviceLink.rel = 'noopener noreferrer';
+    serviceLink.dataset.serviceId = service.id;
+
+    // Icône du service
+    const icon = document.createElement('div');
+    icon.className = 'service-icon';
+    icon.innerHTML = `
+      <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/${service.icon}.svg" 
+           alt="${service.name}" width="24" height="24">
+    `;
+
+    // Informations du service
+    const details = document.createElement('div');
+    details.className = 'service-details';
+    details.innerHTML = `
+      <h3 class="service-name">${service.name}</h3>
+      <p class="service-description">${service.description}</p>
+    `;
+
+    serviceLink.appendChild(icon);
+    serviceLink.appendChild(details);
+
+    return serviceLink;
+  }
+
+  /**
+   * Récupère le nom lisible d'une catégorie
+   * @param {string} categoryId - ID de la catégorie
+   * @returns {string} Nom de la catégorie
+   */
+  getCategoryName(categoryId) {
+    const category = this.config.categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : categoryId;
+  }
+
+  /**
+   * Récupère un service par son ID
+   * @param {string} serviceId - ID du service
+   * @returns {Object|null} Service correspondant
+   */
+  getServiceById(serviceId) {
+    return this.services.find((service) => service.id === serviceId) || null;
   }
 
   /**
@@ -83,14 +220,9 @@ export default class ServicesManager {
       }
 
       // Valider et filtrer les services personnalisés
-      return customServices.filter((service) =>
-        this.validateServiceConfig(service)
-      );
+      return customServices.filter((service) => this.validateServiceConfig(service));
     } catch (error) {
-      console.error(
-        "Erreur lors du chargement des services personnalisés",
-        error
-      );
+      console.error('Erreur lors du chargement des services personnalisés', error);
       return [];
     }
   }
@@ -101,24 +233,13 @@ export default class ServicesManager {
    * @returns {boolean} Indique si la configuration est valide
    */
   validateServiceConfig(serviceConfig) {
-    const requiredFields = [
-      "id",
-      "name",
-      "description",
-      "url",
-      "icon",
-      "category",
-    ];
+    const requiredFields = ['id', 'name', 'description', 'url', 'icon', 'category'];
 
     // Vérifier la présence de tous les champs requis
-    const hasAllFields = requiredFields.every(
-      (field) => serviceConfig.hasOwnProperty(field) && serviceConfig[field]
-    );
+    const hasAllFields = requiredFields.every((field) => serviceConfig.hasOwnProperty(field) && serviceConfig[field]);
 
     // Vérifier que la catégorie existe
-    const isValidCategory = this.config.categories.some(
-      (category) => category.id === serviceConfig.category
-    );
+    const isValidCategory = this.config.categories.some((category) => category.id === serviceConfig.category);
 
     return hasAllFields && isValidCategory;
   }
@@ -131,14 +252,12 @@ export default class ServicesManager {
   addCustomService(serviceConfig) {
     // Valider la configuration du service
     if (!this.validateServiceConfig(serviceConfig)) {
-      console.warn("Configuration de service invalide", serviceConfig);
+      console.warn('Configuration de service invalide', serviceConfig);
       return false;
     }
 
     // Vérifier que le service n'existe pas déjà
-    const existingService = this.services.find(
-      (s) => s.id === serviceConfig.id
-    );
+    const existingService = this.services.find((s) => s.id === serviceConfig.id);
     if (existingService) {
       console.warn(`Un service avec l'ID ${serviceConfig.id} existe déjà`);
       return false;
@@ -165,56 +284,12 @@ export default class ServicesManager {
   saveCustomServices() {
     try {
       // Ne sauvegarder que les services personnalisés (non par défaut)
-      const customServices = this.services.filter(
-        (service) => !this.isDefaultService(service)
-      );
+      const customServices = this.services.filter((service) => !this.isDefaultService(service));
 
-      localStorage.setItem(
-        this.config.storageKey,
-        JSON.stringify(customServices)
-      );
+      localStorage.setItem(this.config.storageKey, JSON.stringify(customServices));
     } catch (error) {
-      console.error(
-        "Erreur lors de la sauvegarde des services personnalisés",
-        error
-      );
+      console.error('Erreur lors de la sauvegarde des services personnalisés', error);
     }
-  }
-
-  /**
-   * Supprime un service personnalisé
-   * @param {string} serviceId - ID du service à supprimer
-   * @returns {boolean} Indique si la suppression a réussi
-   */
-  removeCustomService(serviceId) {
-    // Trouver l'index du service
-    const serviceIndex = this.services.findIndex((s) => s.id === serviceId);
-
-    // Vérifier si le service existe
-    if (serviceIndex === -1) {
-      console.warn(`Aucun service trouvé avec l'ID ${serviceId}`);
-      return false;
-    }
-
-    // Empêcher la suppression des services par défaut
-    if (this.isDefaultService(this.services[serviceIndex])) {
-      console.warn("Impossible de supprimer un service par défaut");
-      return false;
-    }
-
-    // Supprimer le service
-    this.services.splice(serviceIndex, 1);
-
-    // Réindexer les services
-    this.indexServices();
-
-    // Sauvegarder les services personnalisés
-    this.saveCustomServices();
-
-    // Mettre à jour l'affichage
-    this.renderServices();
-
-    return true;
   }
 
   /**
@@ -223,23 +298,7 @@ export default class ServicesManager {
    * @returns {boolean} Indique si le service est par défaut
    */
   isDefaultService(service) {
-    const defaultServiceIds = ["jellyfin", "portainer", "gitea", "vaultwarden"];
+    const defaultServiceIds = ['jellyfin', 'portainer', 'gitea', 'vaultwarden', 'nextcloud', 'home-assistant'];
     return defaultServiceIds.includes(service.id);
-  }
-
-  /**
-   * Valide un service avant ajout
-   * @param {Object} service - Service à valider
-   * @returns {boolean} Indique si le service est valide
-   */
-  validateService(service) {
-    // Vérifications de base
-    return !!(
-      service.id &&
-      service.name &&
-      service.url &&
-      service.category &&
-      this.config.categories.some((c) => c.id === service.category)
-    );
   }
 }

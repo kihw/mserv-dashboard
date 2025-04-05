@@ -6,13 +6,13 @@
       "icon": "play-circle"
     },
     {
-      "id": "admin", 
+      "id": "admin",
       "name": "Administration",
       "icon": "settings"
     },
     {
       "id": "dev",
-      "name": "Développement", 
+      "name": "Développement",
       "icon": "code"
     },
     {
@@ -31,24 +31,24 @@
       "category": "media"
     },
     {
-      "id": "portainer", 
+      "id": "portainer",
       "name": "Portainer",
       "description": "Gestion de conteneurs Docker",
-      "url": "portainer.mserv.wtf", 
+      "url": "portainer.mserv.wtf",
       "icon": "portainer",
       "category": "admin"
     },
     {
       "id": "gitea",
-      "name": "Gitea", 
+      "name": "Gitea",
       "description": "Plateforme de dépôts Git",
       "url": "git.mserv.wtf",
-      "icon": "gitea", 
+      "icon": "gitea",
       "category": "dev"
     },
     {
       "id": "vaultwarden",
-      "name": "Vaultwarden", 
+      "name": "Vaultwarden",
       "description": "Gestionnaire de mots de passe sécurisé",
       "url": "vault.mserv.wtf",
       "icon": "bitwarden",
@@ -56,7 +56,7 @@
     },
     {
       "id": "nextcloud",
-      "name": "Nextcloud", 
+      "name": "Nextcloud",
       "description": "Cloud personnel et stockage",
       "url": "cloud.mserv.wtf",
       "icon": "nextcloud",
@@ -64,7 +64,7 @@
     },
     {
       "id": "home-assistant",
-      "name": "Home Assistant", 
+      "name": "Home Assistant",
       "description": "Automatisation domotique",
       "url": "hass.mserv.wtf",
       "icon": "home-assistant",

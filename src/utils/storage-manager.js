@@ -11,7 +11,7 @@ export default class StorageManager {
     storageLimit: 5 * 1024 * 1024, // 5 Mo
 
     // Préfixes réservés
-    reservedPrefixes: ["mserv_", "dashboard_"],
+    reservedPrefixes: ['mserv_', 'dashboard_'],
 
     // Durée de conservation des données (en jours)
     defaultExpiration: 30,
@@ -66,10 +66,7 @@ export default class StorageManager {
       };
 
       // Vérifier l'espace disponible
-      if (
-        this.calculateStorageSize() + JSON.stringify(data).length >
-        this.config.storageLimit
-      ) {
+      if (this.calculateStorageSize() + JSON.stringify(data).length > this.config.storageLimit) {
         this.handleStorageFull(key, data);
         return false;
       }
@@ -101,10 +98,11 @@ export default class StorageManager {
    * @returns {boolean} Indique si la clé est valide
    */
   static isValidKey(key) {
-    // Vérifier les préfixes réservés
-    return !this.config.reservedPrefixes.some((prefix) =>
-      key.startsWith(prefix)
-    );
+    // Autoriser les clés commençant par mserv_
+    if (key.startsWith('mserv_')) return true;
+
+    // Vérifier les autres préfixes réservés
+    return !this.config.reservedPrefixes.some((prefix) => key.startsWith(prefix));
   }
 
   /**
@@ -129,15 +127,10 @@ export default class StorageManager {
    * @param {*} data - Données qui n'ont pas pu être stockées
    */
   static handleStorageFull(key, data) {
-    console.warn(
-      "Stockage local presque plein. Tentative de libération d'espace."
-    );
+    console.warn("Stockage local presque plein. Tentative de libération d'espace.");
 
     // Stratégies de libération d'espace
-    const strategies = [
-      this.removeExpiredEntries.bind(this),
-      this.removeOldestEntries.bind(this),
-    ];
+    const strategies = [this.removeExpiredEntries.bind(this), this.removeOldestEntries.bind(this)];
 
     // Essayer chaque stratégie
     for (const strategy of strategies) {
@@ -206,14 +199,14 @@ export default class StorageManager {
    */
   static notifyStorageFull(key) {
     // Créer une notification pour l'utilisateur
-    const notification = document.createElement("div");
-    notification.className = "storage-full-notification";
+    const notification = document.createElement('div');
+    notification.className = 'storage-full-notification';
     notification.innerHTML = `
         <div class="notification-content">
           <h3>Espace de stockage insuffisant</h3>
           <p>Impossible de sauvegarder certaines données. 
              Pensez à libérer de l'espace.</p>
-          ${key ? `<small>Clé : ${key}</small>` : ""}
+          ${key ? `<small>Clé : ${key}</small>` : ''}
           <button class="close-notification">Fermer</button>
         </div>
       `;
@@ -235,8 +228,8 @@ export default class StorageManager {
     document.body.appendChild(notification);
 
     // Gestionnaire de fermeture
-    const closeBtn = notification.querySelector(".close-notification");
-    closeBtn.addEventListener("click", () => {
+    const closeBtn = notification.querySelector('.close-notification');
+    closeBtn.addEventListener('click', () => {
       document.body.removeChild(notification);
     });
 
@@ -291,7 +284,7 @@ export default class StorageManager {
 }
 
 // Ajouter des styles globaux pour la notification
-const style = document.createElement("style");
+const style = document.createElement('style');
 style.textContent = `
     .storage-full-notification .notification-content {
       display: flex;

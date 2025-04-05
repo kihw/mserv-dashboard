@@ -7,15 +7,9 @@ export default class FavoritesManager {
 
     // Configuration
     this.config = {
-      storageKey: "mserv_favorites",
+      storageKey: 'mserv_favorites',
       maxFavorites: 10,
-      defaultFavorites: [
-        "jellyfin",
-        "portainer",
-        "radarr",
-        "sonarr",
-        "vaultwarden",
-      ],
+      defaultFavorites: ['jellyfin', 'portainer', 'vaultwarden', 'nextcloud', 'gitea'],
     };
 
     // État des favoris
@@ -28,12 +22,18 @@ export default class FavoritesManager {
       addFavoriteBtn: null,
       editFavoritesPanel: null,
     };
+
+    // Liste des services disponibles
+    this.services = [];
   }
 
   /**
    * Initialisation du gestionnaire de favoris
    */
-  initialize() {
+  async initialize() {
+    // Charger la configuration des services
+    await this.loadServices();
+
     // Charger les favoris
     this.loadFavorites();
 
@@ -48,16 +48,36 @@ export default class FavoritesManager {
   }
 
   /**
+   * Charge la liste des services
+   */
+  async loadServices() {
+    try {
+      const response = await fetch('/config/services.json');
+      const serviceConfig = await response.json();
+      this.services = serviceConfig.default_services || [];
+    } catch (error) {
+      console.error('Erreur lors du chargement des services', error);
+      this.services = [];
+    }
+  }
+
+  /**
+   * Récupère un service par son ID
+   * @param {string} serviceId - ID du service
+   * @returns {Object|null} Service correspondant
+   */
+  getServiceById(serviceId) {
+    return this.services.find((service) => service.id === serviceId) || null;
+  }
+
+  /**
    * Mise en cache des éléments DOM
    */
   cacheElements() {
-    this.elements.favoritesContainer = document.querySelector(".favorites");
-    this.elements.favoritesList = document.getElementById("favorites-list");
-    this.elements.addFavoriteBtn =
-      document.getElementById("edit-favorites-btn");
-    this.elements.editFavoritesPanel = document.getElementById(
-      "edit-favorites-panel"
-    );
+    this.elements.favoritesContainer = document.querySelector('.favorites');
+    this.elements.favoritesList = document.getElementById('favorites-list');
+    this.elements.addFavoriteBtn = document.getElementById('edit-favorites-btn');
+    this.elements.editFavoritesPanel = document.getElementById('edit-favorites-panel');
   }
 
   /**
@@ -72,18 +92,14 @@ export default class FavoritesManager {
         const parsedFavorites = JSON.parse(storedFavorites);
 
         // Valider et filtrer les favoris
-        this.favorites = parsedFavorites.filter((favoriteId) =>
-          this.isValidFavorite(favoriteId)
-        );
+        this.favorites = parsedFavorites.filter((favoriteId) => this.isValidFavorite(favoriteId));
       } else {
         // Utiliser les favoris par défaut
-        this.favorites = this.config.defaultFavorites.filter((favoriteId) =>
-          this.isValidFavorite(favoriteId)
-        );
+        this.favorites = this.config.defaultFavorites.filter((favoriteId) => this.isValidFavorite(favoriteId));
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des favoris", error);
-      this.favorites = this.config.defaultFavorites;
+      console.error('Erreur lors du chargement des favoris', error);
+      this.favorites = this.config.defaultFavorites.filter((favoriteId) => this.isValidFavorite(favoriteId));
     }
 
     // Sauvegarder les favoris validés
@@ -95,15 +111,12 @@ export default class FavoritesManager {
    */
   saveFavorites() {
     try {
-      localStorage.setItem(
-        this.config.storageKey,
-        JSON.stringify(this.favorites)
-      );
+      localStorage.setItem(this.config.storageKey, JSON.stringify(this.favorites));
 
       // Déclencher un événement de mise à jour
-      this.dashboard.eventManager.emit("favorites:updated", this.favorites);
+      this.dashboard.eventManager.emit('favorites:updated', this.favorites);
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde des favoris", error);
+      console.error('Erreur lors de la sauvegarde des favoris', error);
     }
   }
 
@@ -114,7 +127,7 @@ export default class FavoritesManager {
    */
   isValidFavorite(favoriteId) {
     // Vérifier que le service existe
-    return !!this.dashboard.servicesManager.getServiceById(favoriteId);
+    return !!this.getServiceById(favoriteId);
   }
 
   /**
@@ -122,21 +135,12 @@ export default class FavoritesManager {
    */
   setupEventListeners() {
     // Écouter les événements de favoris
-    document.addEventListener(
-      "favorite:add",
-      this.handleFavoriteAdd.bind(this)
-    );
-    document.addEventListener(
-      "favorite:remove",
-      this.handleFavoriteRemove.bind(this)
-    );
+    document.addEventListener('favorite:add', this.handleFavoriteAdd.bind(this));
+    document.addEventListener('favorite:remove', this.handleFavoriteRemove.bind(this));
 
     // Ajouter un gestionnaire pour le bouton d'édition
     if (this.elements.addFavoriteBtn) {
-      this.elements.addFavoriteBtn.addEventListener(
-        "click",
-        this.openFavoritesEditor.bind(this)
-      );
+      this.elements.addFavoriteBtn.addEventListener('click', this.openFavoritesEditor.bind(this));
     }
   }
 
@@ -147,14 +151,14 @@ export default class FavoritesManager {
     if (!this.elements.favoritesList) return;
 
     // Vider la liste actuelle
-    this.elements.favoritesList.innerHTML = "";
+    this.elements.favoritesList.innerHTML = '';
 
     // Créer un fragment pour optimiser le rendu
     const fragment = document.createDocumentFragment();
 
     // Ajouter les favoris
     this.favorites.forEach((favoriteId) => {
-      const service = this.dashboard.servicesManager.getServiceById(favoriteId);
+      const service = this.getServiceById(favoriteId);
       if (service) {
         const favoriteItem = this.createFavoriteItemElement(service);
         fragment.appendChild(favoriteItem);
@@ -175,19 +179,19 @@ export default class FavoritesManager {
    * @returns {HTMLElement} Élément de favori
    */
   createFavoriteItemElement(service) {
-    const favItem = document.createElement("a");
+    const favItem = document.createElement('a');
     favItem.href = `https://${service.url}`;
-    favItem.className = "favorite-item";
+    favItem.className = 'favorite-item';
     favItem.dataset.serviceId = service.id;
 
     // Icône
-    const icon = document.createElement("div");
-    icon.className = "favorite-item-icon";
+    const icon = document.createElement('div');
+    icon.className = 'favorite-item-icon';
     icon.innerHTML = this.getServiceIcon(service.id);
 
     // Nom
-    const name = document.createElement("div");
-    name.className = "favorite-item-name";
+    const name = document.createElement('div');
+    name.className = 'favorite-item-name';
     name.textContent = service.name;
 
     favItem.appendChild(icon);
@@ -201,16 +205,31 @@ export default class FavoritesManager {
    * @returns {HTMLElement} Bouton d'ajout
    */
   createAddFavoriteButton() {
-    const addButton = document.createElement("button");
-    addButton.className = "add-favorite";
+    const addButton = document.createElement('button');
+    addButton.className = 'add-favorite';
     addButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 5v14M5 12h14"></path>
         </svg>
         Ajouter
       `;
-    addButton.addEventListener("click", this.openFavoritesEditor.bind(this));
+    addButton.addEventListener('click', this.openFavoritesEditor.bind(this));
     return addButton;
+  }
+
+  /**
+   * Récupère l'icône d'un service
+   * @param {string} serviceId - ID du service
+   * @returns {string} HTML de l'icône
+   */
+  getServiceIcon(serviceId) {
+    const service = this.getServiceById(serviceId);
+    if (!service) return '';
+
+    return `
+        <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/${service.icon}.svg" 
+             alt="${service.name}" width="24" height="24">
+      `;
   }
 
   /**
@@ -220,21 +239,16 @@ export default class FavoritesManager {
     if (!this.elements.editFavoritesPanel) return;
 
     // Vider la liste des services
-    const editList = this.elements.editFavoritesPanel.querySelector(
-      "#edit-favorites-list"
-    );
+    const editList = this.elements.editFavoritesPanel.querySelector('#edit-favorites-list');
     if (!editList) return;
 
-    editList.innerHTML = "";
-
-    // Récupérer tous les services
-    const allServices = this.dashboard.servicesManager.services;
+    editList.innerHTML = '';
 
     // Créer un fragment pour optimiser le rendu
     const fragment = document.createDocumentFragment();
 
     // Ajouter chaque service
-    allServices.forEach((service) => {
+    this.services.forEach((service) => {
       const item = this.createFavoriteEditorItem(service);
       fragment.appendChild(item);
     });
@@ -243,7 +257,7 @@ export default class FavoritesManager {
     editList.appendChild(fragment);
 
     // Afficher le panneau
-    this.elements.editFavoritesPanel.classList.add("active");
+    this.elements.editFavoritesPanel.classList.add('active');
   }
 
   /**
@@ -252,44 +266,27 @@ export default class FavoritesManager {
    * @returns {HTMLElement} Élément de service
    */
   createFavoriteEditorItem(service) {
-    const item = document.createElement("div");
-    item.className = `edit-favorites-item ${
-      this.favorites.includes(service.id) ? "selected" : ""
-    }`;
+    const item = document.createElement('div');
+    item.className = `edit-favorites-item ${this.favorites.includes(service.id) ? 'selected' : ''}`;
     item.dataset.serviceId = service.id;
 
     // Icône
-    const icon = document.createElement("div");
-    icon.className = "edit-favorites-item-icon";
+    const icon = document.createElement('div');
+    icon.className = 'edit-favorites-item-icon';
     icon.innerHTML = this.getServiceIcon(service.id);
 
     // Nom
-    const name = document.createElement("div");
-    name.className = "edit-favorites-item-name";
+    const name = document.createElement('div');
+    name.className = 'edit-favorites-item-name';
     name.textContent = service.name;
 
     item.appendChild(icon);
     item.appendChild(name);
 
     // Événement de sélection
-    item.addEventListener("click", this.toggleFavoriteSelection.bind(this));
+    item.addEventListener('click', this.toggleFavoriteSelection.bind(this));
 
     return item;
-  }
-
-  /**
-   * Récupère l'icône d'un service
-   * @param {string} serviceId - ID du service
-   * @returns {string} HTML de l'icône
-   */
-  getServiceIcon(serviceId) {
-    const service = this.dashboard.servicesManager.getServiceById(serviceId);
-    if (!service) return "";
-
-    return `
-        <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/${service.icon}.svg" 
-             alt="${service.name}" width="24" height="24">
-      `;
   }
 
   /**
@@ -303,25 +300,81 @@ export default class FavoritesManager {
     if (this.favorites.includes(serviceId)) {
       // Retirer des favoris
       this.favorites = this.favorites.filter((id) => id !== serviceId);
-      item.classList.remove("selected");
+      item.classList.remove('selected');
     } else {
       // Ajouter aux favoris
       if (this.favorites.length < this.config.maxFavorites) {
         this.favorites.push(serviceId);
-        item.classList.add("selected");
+        item.classList.add('selected');
       } else {
         // Limite atteinte
         this.showMaxFavoritesWarning();
       }
     }
+
+    // Sauvegarder et mettre à jour
+    this.saveFavorites();
+    this.renderFavorites();
   }
 
   /**
    * Affiche un avertissement si le nombre maximum de favoris est atteint
    */
   showMaxFavoritesWarning() {
-    // TODO: Implémenter un toast ou un modal d'avertissement
-    console.warn(`Limite de ${this.config.maxFavorites} favoris atteinte`);
+    // Créer une notification élégante
+    const notification = document.createElement('div');
+    notification.className = 'max-favorites-notification';
+    notification.innerHTML = `
+    <div class="notification-content">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+           stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <p>Limite de ${this.config.maxFavorites} favoris atteinte. Retirez un service avant d'en ajouter un nouveau.</p>
+    </div>
+  `;
+
+    // Style et animation
+    notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 4px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    animation: slideIn 0.3s ease-out;
+  `;
+
+    // Ajouter des styles d'animation
+    const style = document.createElement('style');
+    style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+  `;
+    document.head.appendChild(style);
+
+    // Ajouter et auto-supprimer
+    document.body.appendChild(notification);
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-out';
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
   }
 
   /**
@@ -341,210 +394,7 @@ export default class FavoritesManager {
       }
     }
   }
-  /**
-   * Crée un bouton d'ajout de favoris
-   * @returns {HTMLElement} Bouton d'ajout
-   */
-  createAddFavoriteButton() {
-    const addButton = document.createElement("button");
-    addButton.className = "add-favorite";
-    addButton.setAttribute("aria-label", "Ajouter un favori");
-    addButton.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
-           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
-           stroke-linejoin="round">
-        <path d="M12 5v14M5 12h14"></path>
-      </svg>
-      <span>Ajouter</span>
-    `;
-    addButton.addEventListener("click", this.openFavoritesEditor.bind(this));
 
-    // Accessibilité
-    addButton.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        this.openFavoritesEditor();
-      }
-    });
-
-    return addButton;
-  }
-
-  /**
-   * Ouvre l'éditeur de favoris avec des animations
-   */
-  openFavoritesEditor() {
-    if (!this.elements.editFavoritesPanel) return;
-
-    // Vider la liste des services
-    const editList = this.elements.editFavoritesPanel.querySelector(
-      "#edit-favorites-list"
-    );
-    if (!editList) return;
-
-    editList.innerHTML = "";
-
-    // Récupérer tous les services
-    const allServices = this.dashboard.servicesManager.services;
-
-    // Créer un fragment pour optimiser le rendu
-    const fragment = document.createDocumentFragment();
-
-    // Grouper les services par catégorie
-    const servicesByCategory = this.groupServicesByCategory(allServices);
-
-    // Ajouter les services par catégorie
-    Object.entries(servicesByCategory).forEach(([category, services]) => {
-      // Créer un en-tête de catégorie
-      const categoryHeader = document.createElement("div");
-      categoryHeader.className = "edit-favorites-category-header";
-      categoryHeader.textContent = this.getCategoryName(category);
-      fragment.appendChild(categoryHeader);
-
-      // Créer un conteneur pour les services de la catégorie
-      const categoryContainer = document.createElement("div");
-      categoryContainer.className = "edit-favorites-category";
-
-      // Ajouter chaque service de la catégorie
-      services.forEach((service) => {
-        const item = this.createFavoriteEditorItem(service);
-        categoryContainer.appendChild(item);
-      });
-
-      fragment.appendChild(categoryContainer);
-    });
-
-    // Ajouter le fragment
-    editList.appendChild(fragment);
-
-    // Afficher le panneau avec une animation
-    this.elements.editFavoritesPanel.classList.add("active");
-    this.elements.editFavoritesPanel.setAttribute("aria-hidden", "false");
-
-    // Gestion du focus et de l'accessibilité
-    const firstItem = editList.querySelector(".edit-favorites-item");
-    if (firstItem) firstItem.focus();
-  }
-
-  /**
-   * Groupe les services par catégorie
-   * @param {Array} services - Liste des services
-   * @returns {Object} Services groupés par catégorie
-   */
-  groupServicesByCategory(services) {
-    return services.reduce((acc, service) => {
-      if (!acc[service.category]) {
-        acc[service.category] = [];
-      }
-      acc[service.category].push(service);
-      return acc;
-    }, {});
-  }
-
-  /**
-   * Récupère le nom lisible d'une catégorie
-   * @param {string} categoryId - ID de la catégorie
-   * @returns {string} Nom de la catégorie
-   */
-  getCategoryName(categoryId) {
-    const categories = {
-      media: "Médias",
-      admin: "Administration",
-      dev: "Développement",
-      tools: "Outils",
-    };
-    return categories[categoryId] || categoryId;
-  }
-
-  /**
-   * Bascule la sélection d'un service dans les favoris
-   * @param {Event} event - Événement de clic
-   */
-  toggleFavoriteSelection(event) {
-    const item = event.currentTarget;
-    const serviceId = item.dataset.serviceId;
-
-    // Animations et retour utilisateur
-    item.classList.add("favorite-toggle-animation");
-    setTimeout(() => {
-      item.classList.remove("favorite-toggle-animation");
-    }, 300);
-
-    if (this.favorites.includes(serviceId)) {
-      // Retirer des favoris
-      this.favorites = this.favorites.filter((id) => id !== serviceId);
-      item.classList.remove("selected");
-      item.setAttribute("aria-pressed", "false");
-    } else {
-      // Ajouter aux favoris
-      if (this.favorites.length < this.config.maxFavorites) {
-        this.favorites.push(serviceId);
-        item.classList.add("selected");
-        item.setAttribute("aria-pressed", "true");
-      } else {
-        // Limite atteinte
-        this.showMaxFavoritesWarning();
-      }
-    }
-
-    // Sauvegarder et mettre à jour
-    this.saveFavorites();
-    this.renderFavorites();
-  }
-
-  /**
-   * Affiche un avertissement élégant si le nombre maximum de favoris est atteint
-   */
-  showMaxFavoritesWarning() {
-    const notification = document.createElement("div");
-    notification.className = "max-favorites-notification";
-    notification.innerHTML = `
-      <div class="notification-content">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
-             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
-             stroke-linejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-          <line x1="12" y1="9" x2="12" y2="13"></line>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
-        <p>Limite de ${this.config.maxFavorites} favoris atteinte. Retirez un service avant d'en ajouter un nouveau.</p>
-      </div>
-    `;
-
-    // Style et animation
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: #f44336;
-      color: white;
-      padding: 15px;
-      border-radius: 4px;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      animation: slideIn 0.3s ease-out;
-    `;
-
-    // Ajouter des styles d'animation
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Ajouter et auto-supprimer
-    document.body.appendChild(notification);
-    setTimeout(() => {
-      notification.style.animation = "slideOut 0.3s ease-out";
-      setTimeout(() => {
-        document.body.removeChild(notification);
-      }, 300);
-    }, 3000);
-  }
   /**
    * Gère la suppression d'un favori
    * @param {Event} event - Événement de suppression de favori
