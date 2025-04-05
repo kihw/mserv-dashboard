@@ -6,13 +6,13 @@
       "icon": "play-circle"
     },
     {
-      "id": "admin",
+      "id": "admin", 
       "name": "Administration",
       "icon": "settings"
     },
     {
       "id": "dev",
-      "name": "Développement",
+      "name": "Développement", 
       "icon": "code"
     },
     {
@@ -25,33 +25,49 @@
     {
       "id": "jellyfin",
       "name": "Jellyfin",
-      "description": "Serveur multimédia",
+      "description": "Serveur multimédia open-source",
       "url": "jellyfin.mserv.wtf",
       "icon": "jellyfin",
       "category": "media"
     },
     {
-      "id": "portainer",
+      "id": "portainer", 
       "name": "Portainer",
-      "description": "Gestion Docker",
-      "url": "portainer.mserv.wtf",
+      "description": "Gestion de conteneurs Docker",
+      "url": "portainer.mserv.wtf", 
       "icon": "portainer",
       "category": "admin"
     },
     {
       "id": "gitea",
-      "name": "Gitea",
-      "description": "Dépôts Git",
+      "name": "Gitea", 
+      "description": "Plateforme de dépôts Git",
       "url": "git.mserv.wtf",
-      "icon": "gitea",
+      "icon": "gitea", 
       "category": "dev"
     },
     {
       "id": "vaultwarden",
-      "name": "Vaultwarden",
-      "description": "Gestion de mots de passe",
+      "name": "Vaultwarden", 
+      "description": "Gestionnaire de mots de passe sécurisé",
       "url": "vault.mserv.wtf",
       "icon": "bitwarden",
+      "category": "tools"
+    },
+    {
+      "id": "nextcloud",
+      "name": "Nextcloud", 
+      "description": "Cloud personnel et stockage",
+      "url": "cloud.mserv.wtf",
+      "icon": "nextcloud",
+      "category": "tools"
+    },
+    {
+      "id": "home-assistant",
+      "name": "Home Assistant", 
+      "description": "Automatisation domotique",
+      "url": "hass.mserv.wtf",
+      "icon": "home-assistant",
       "category": "tools"
     }
   ],

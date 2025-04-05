@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mserv.wtf Dashboard</title>
+
+    <!-- CSS Base -->
+    <link rel="stylesheet" href="/static/css/base.css" />
+    <link rel="stylesheet" href="/static/css/components.css" />
+    <link rel="stylesheet" href="/static/css/themes.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/src/main.js" as="script" type="module" />
+
+    <!-- Meta Tags -->
+    <meta
+      name="description"
+      content="Dashboard centralisé pour vos services auto-hébergés"
+    />
+    <meta name="theme-color" content="#7371fc" />
+  </head>
+  <body>
+    <div id="app" class="dashboard">
+      <header class="dashboard-header">
+        <div class="logo">
+          <h1>mserv.wtf</h1>
+        </div>
+        <nav class="dashboard-nav">
+          <button id="theme-toggle" aria-label="Toggle Theme">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+          <input
+            type="search"
+            id="search"
+            placeholder="Rechercher un service..."
+            aria-label="Rechercher"
+          />
+        </nav>
+      </header>
+
+      <main class="dashboard-content">
+        <section class="favorites">
+          <h2>Favoris</h2>
+          <div id="favorites-list" class="favorites-grid"></div>
+        </section>
+
+        <section class="categories">
+          <h2>Services</h2>
+          <div class="categories-grid"></div>
+        </section>
+      </main>
+
+      <footer class="dashboard-footer">
+        <p>&copy; 2024 mserv.wtf Dashboard</p>
+      </footer>
+    </div>
+
+    <!-- Main Application Script -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

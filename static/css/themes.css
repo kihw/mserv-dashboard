@@ -1,22 +1,40 @@
 :root {
-  /* Thème par défaut */
+  /* Couleurs de base */
   --bg-primary: #121212;
   --bg-secondary: #1a1a1a;
   --bg-tertiary: #232323;
   --text-primary: #ffffff;
   --text-secondary: #e0e0e0;
   --accent-color: #7371fc;
+  --accent-color-hover: #5f5ed2;
 
-  /* Transitions */
+  /* Couleurs d'état */
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --error-color: #f44336;
+  --info-color: #2196f3;
+
+  /* Typographie */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --font-size-base: 16px;
+  --line-height-base: 1.5;
+
+  /* Transitions et animations */
   --transition-speed: 0.3s;
-}
+  --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
 
-/* Styles de base du thème */
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color var(--transition-speed) ease,
-    color var(--transition-speed) ease;
+  /* Espacements */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Bordures */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
 }
 
 /* Thème clair */
@@ -27,25 +45,41 @@ body {
   --text-primary: #1d1d1f;
   --text-secondary: #333333;
   --accent-color: #7371fc;
+  --accent-color-hover: #5f5ed2;
 }
 
-/* Composants sensibles au thème */
+/* Styles de base */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  transition: background-color var(--transition-speed) var(--transition-easing),
+    color var(--transition-speed) var(--transition-easing);
+}
+
+/* Composants génériques */
 .category {
   background-color: var(--bg-secondary);
   border-color: var(--bg-tertiary);
-  transition: background-color var(--transition-speed) ease;
+  border-radius: var(--border-radius-md);
+  transition: background-color var(--transition-speed) var(--transition-easing);
 }
 
 .service {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
-  transition: background-color var(--transition-speed) ease,
-    color var(--transition-speed) ease;
+  border-radius: var(--border-radius-md);
+  transition: background-color var(--transition-speed) var(--transition-easing),
+    color var(--transition-speed) var(--transition-easing),
+    transform 0.2s var(--transition-easing);
 }
 
 .service:hover {
   background-color: var(--accent-color);
   color: var(--bg-primary);
+  transform: scale(1.02);
 }
 
 /* Boutons et interactions */
@@ -53,18 +87,29 @@ button,
 .button {
   background-color: var(--accent-color);
   color: var(--bg-primary);
-  transition: background-color var(--transition-speed) ease,
-    color var(--transition-speed) ease;
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-speed) var(--transition-easing),
+    color var(--transition-speed) var(--transition-easing),
+    transform 0.2s var(--transition-easing);
 }
 
 button:hover,
 .button:hover {
-  opacity: 0.9;
+  background-color: var(--accent-color-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:active,
+.button:active {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 /* Focus et états actifs */
 *:focus {
-  outline-color: var(--accent-color);
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 /* Scrollbar personnalisée */
@@ -85,7 +130,7 @@ button:hover,
 img,
 svg {
   filter: brightness(var(--theme-brightness, 1));
-  transition: filter var(--transition-speed) ease;
+  transition: filter var(--transition-speed) var(--transition-easing);
 }
 
 .light-theme {
@@ -94,4 +139,55 @@ svg {
 
 .dark-theme {
   --theme-brightness: 0.8;
+}
+
+/* États spécifiques */
+.success {
+  color: var(--success-color);
+}
+
+.warning {
+  color: var(--warning-color);
+}
+
+.error {
+  color: var(--error-color);
+}
+
+.info {
+  color: var(--info-color);
+}
+
+/* Accessibilité et états désactivés */
+.disabled,
+[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Animations de transition */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Utilitaires de thème */
+.theme-transition {
+  transition: background-color var(--transition-speed) var(--transition-easing),
+    color var(--transition-speed) var(--transition-easing);
 }
