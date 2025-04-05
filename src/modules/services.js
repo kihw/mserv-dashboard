@@ -91,14 +91,39 @@ export default class ServicesManager {
    * Rend les services dans l'interface
    */
   renderServices() {
-    const categoriesGrid = document.querySelector('.categories-grid');
-    if (!categoriesGrid) {
-      console.warn('Élément .categories-grid non trouvé dans le DOM');
+    // Attendre que le DOM soit complètement chargé
+    if (document.readyState !== 'complete') {
+      document.addEventListener('DOMContentLoaded', () => this.renderServices());
       return;
+    }
+
+    // Sélectionner le conteneur de catégories
+    let categoriesGrid = document.querySelector('.categories-grid');
+
+    // Créer le conteneur s'il n'existe pas
+    if (!categoriesGrid) {
+      categoriesGrid = document.createElement('div');
+      categoriesGrid.className = 'categories-grid';
+
+      // Trouver un conteneur parent approprié
+      const parentContainer =
+        document.querySelector('.dashboard-content') || document.querySelector('main') || document.body;
+      parentContainer.appendChild(categoriesGrid);
     }
 
     // Vider le conteneur existant
     categoriesGrid.innerHTML = '';
+
+    // Vérifier si des services sont disponibles
+    if (this.services.length === 0) {
+      console.warn('Aucun service disponible pour le rendu');
+      categoriesGrid.innerHTML = `
+        <div class="no-services-message">
+          <p>Aucun service n'est actuellement configuré.</p>
+        </div>
+      `;
+      return;
+    }
 
     // Grouper les services par catégorie
     const servicesByCategory = this.groupServicesByCategory();
@@ -108,6 +133,8 @@ export default class ServicesManager {
       const category = this.createCategoryElement(categoryId, services);
       categoriesGrid.appendChild(category);
     });
+
+    console.log(`Rendu de ${this.services.length} services dans ${Object.keys(servicesByCategory).length} catégories`);
   }
 
   /**

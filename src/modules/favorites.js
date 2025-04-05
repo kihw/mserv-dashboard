@@ -114,7 +114,11 @@ export default class FavoritesManager {
       localStorage.setItem(this.config.storageKey, JSON.stringify(this.favorites));
 
       // Déclencher un événement de mise à jour
-      this.dashboard.eventManager.emit('favorites:updated', this.favorites);
+      if (this.dashboard?.modules?.events?.emit) {
+        this.dashboard.modules.events.emit('favorites:updated', this.favorites);
+      } else {
+        console.warn("Impossible de déclencher l'événement de mise à jour des favoris");
+      }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des favoris', error);
     }

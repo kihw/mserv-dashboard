@@ -13,30 +13,144 @@ export default class SearchManager {
   }
 
   /**
-   * Initialisation du gestionnaire de recherche
+   * Initialise le gestionnaire de recherche
    */
   initialize() {
-    this.searchInput = document.getElementById('search');
+    // Sélectionner l'input de recherche, créer un si nécessaire
+    this.searchInput = document.getElementById('search') || this.createSearchInput();
 
-    // Attendre que les services soient rendus
-    setTimeout(() => {
+    // Attendre que le DOM soit chargé pour chercher les services et catégories
+    const initializeSearch = () => {
+      // Sélectionner dynamiquement les services et catégories
       this.services = document.querySelectorAll('.service');
       this.categories = document.querySelectorAll('.category');
 
+      // Gestion des cas où aucun service/catégorie n'est trouvé
       if (this.services.length === 0) {
         console.warn('Aucun service trouvé pour la recherche');
+        this.createPlaceholderServices();
       }
 
       if (this.categories.length === 0) {
         console.warn('Aucune catégorie trouvée pour la recherche');
+        this.createPlaceholderCategories();
       }
-    }, 500);
 
+      // Configuration des événements
+      this.setupSearchEvents();
+    };
+
+    // Utiliser l'événement DOMContentLoaded si nécessaire
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeSearch);
+    } else {
+      initializeSearch();
+    }
+  }
+
+  /**
+   * Crée un input de recherche si aucun n'existe
+   * @returns {HTMLInputElement} Input de recherche
+   */
+  createSearchInput() {
+    const searchInput = document.createElement('input');
+    searchInput.id = 'search';
+    searchInput.type = 'search';
+    searchInput.placeholder = 'Rechercher un service...';
+    searchInput.className = 'search-input';
+
+    // Trouver un conteneur approprié
+    const searchContainer =
+      document.querySelector('.search-wrapper') || document.querySelector('.dashboard-nav') || document.body;
+    searchContainer.appendChild(searchInput);
+
+    return searchInput;
+  }
+
+  /**
+   * Crée des services de placeholder si aucun n'est trouvé
+   */
+  createPlaceholderServices() {
+    const placeholderData = [
+      { name: 'Service 1', description: 'Description du service 1' },
+      { name: 'Service 2', description: 'Description du service 2' },
+    ];
+
+    const categoriesGrid = document.querySelector('.categories-grid');
+    if (!categoriesGrid) return;
+
+    const placeholderCategory = document.createElement('div');
+    placeholderCategory.className = 'category';
+    placeholderCategory.innerHTML = `
+      <div class="category-header">
+        <h2>Services par défaut</h2>
+      </div>
+      <div class="services">
+        ${placeholderData
+          .map(
+            (service) => `
+          <div class="service">
+            <div class="service-details">
+              <h3 class="service-name">${service.name}</h3>
+              <p class="service-description">${service.description}</p>
+            </div>
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+
+    categoriesGrid.appendChild(placeholderCategory);
+  }
+
+  /**
+   * Crée des catégories de placeholder si aucune n'est trouvée
+   */
+  createPlaceholderCategories() {
+    const categoriesGrid = document.querySelector('.categories-grid');
+    if (!categoriesGrid) return;
+
+    const placeholderCategories = [
+      { name: 'Catégorie 1', services: ['Service A', 'Service B'] },
+      { name: 'Catégorie 2', services: ['Service C', 'Service D'] },
+    ];
+
+    placeholderCategories.forEach((cat) => {
+      const categoryElement = document.createElement('div');
+      categoryElement.className = 'category';
+      categoryElement.innerHTML = `
+        <div class="category-header">
+          <h2>${cat.name}</h2>
+        </div>
+        <div class="services">
+          ${cat.services
+            .map(
+              (service) => `
+            <div class="service">
+              <div class="service-details">
+                <h3 class="service-name">${service}</h3>
+                <p class="service-description">Description de ${service}</p>
+              </div>
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+      `;
+      categoriesGrid.appendChild(categoryElement);
+    });
+  }
+
+  /**
+   * Configure les événements de recherche
+   */
+  setupSearchEvents() {
     if (this.searchInput) {
       this.searchInput.addEventListener('input', this.debounceSearch.bind(this));
       console.log('Recherche initialisée avec succès');
     } else {
-      console.warn('Élément de recherche non trouvé');
+      console.warn('Impossible de configurer la recherche');
     }
   }
 

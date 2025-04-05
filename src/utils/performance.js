@@ -8,7 +8,7 @@ export default class PerformanceMonitor {
     // Configuration
     this.config = {
       enabled: true,
-      storageKey: "mserv_performance_logs",
+      storageKey: 'mserv_performance_logs',
       maxLogEntries: 100,
       slowRenderThreshold: 50, // ms
       slowEventThreshold: 100, // ms
@@ -28,22 +28,19 @@ export default class PerformanceMonitor {
       memoryUsage: [],
     };
 
+    // Logs de performance
+    this.performanceLogs = [];
+
     // État du moniteur
     this.state = {
       started: false,
       startTime: null,
       reportTimer: null,
     };
-
-    // Gestionnaires
-    this.handlers = {
-      slowPerformance: [],
-      criticalIssue: [],
-    };
   }
 
   /**
-   * Initialise le moniteur de performances
+   * Initialisation du moniteur de performances
    */
   initialize() {
     if (!this.config.enabled) return;
@@ -52,7 +49,7 @@ export default class PerformanceMonitor {
     this.loadPerformanceLogs();
 
     // Configuration des observateurs
-    this.setupObservers();
+    this.setupPerformanceObservers();
 
     // Commencer le suivi
     this.start();
@@ -62,45 +59,150 @@ export default class PerformanceMonitor {
   }
 
   /**
+   * Charge les logs de performance précédents
+   */
+  loadPerformanceLogs() {
+    try {
+      const storedLogs = localStorage.getItem(this.config.storageKey);
+      this.performanceLogs = storedLogs ? JSON.parse(storedLogs) : [];
+    } catch (error) {
+      console.error('Erreur lors du chargement des logs de performance:', error);
+      this.performanceLogs = [];
+    }
+  }
+
+  /**
+   * Configuration des observateurs de performance
+   */
+  setupPerformanceObservers() {
+    // Observer les temps de rendu
+    this.observeRenderTimes();
+
+    // Observer les performances réseau
+    this.observeNetworkPerformance();
+
+    // Observer l'utilisation des ressources
+    this.observeResourceUsage();
+  }
+
+  /**
+   * Observe les temps de rendu
+   */
+  observeRenderTimes() {
+    const originalCreateElement = document.createElement;
+    document.createElement = function (...args) {
+      const startTime = performance.now();
+      const element = originalCreateElement.apply(this, args);
+      const endTime = performance.now();
+
+      // Enregistrer le temps de rendu
+      if (endTime - startTime > this.config.slowRenderThreshold) {
+        this.metrics.renderTimes.push({
+          element: args[0],
+          time: endTime - startTime,
+        });
+      }
+
+      return element;
+    }.bind(this);
+  }
+
+  /**
+   * Observe les performances réseau
+   */
+  observeNetworkPerformance() {
+    if ('performance' in window) {
+      const observer = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        entries.forEach((entry) => {
+          if (entry.initiatorType) {
+            const performanceEntry = {
+              name: entry.name,
+              initiatorType: entry.initiatorType,
+              transferSize: entry.transferSize,
+              duration: entry.duration,
+            };
+
+            this.metrics.networkPerformance.push(performanceEntry);
+
+            // Vérifier les seuils réseau
+            if (entry.duration > this.config.networkThresholds.slowDownload) {
+              console.warn(`Téléchargement lent détecté: ${entry.name}`, performanceEntry);
+            }
+          }
+        });
+      });
+
+      observer.observe({ type: 'resource' });
+    }
+  }
+
+  /**
+   * Observe l'utilisation des ressources
+   */
+  observeResourceUsage() {
+    // Utilisation mémoire
+    if ('performance' in window && 'memory' in performance) {
+      const collectMemoryUsage = () => {
+        const memory = performance.memory;
+        this.metrics.memoryUsage.push({
+          totalJSHeapSize: memory.totalJSHeapSize,
+          usedJSHeapSize: memory.usedJSHeapSize,
+          jsHeapSizeLimit: memory.jsHeapSizeLimit,
+        });
+      };
+
+      // Collecter périodiquement l'utilisation mémoire
+      setInterval(collectMemoryUsage, 5000);
+    }
+  }
+
+  /**
+   * Démarre le monitoring
+   */
+  start() {
+    if (this.state.started) return;
+
+    this.state.started = true;
+    this.state.startTime = Date.now();
+
+    console.log('Monitoring de performances démarré');
+  }
+
+  /**
    * Configuration des rapports périodiques
    */
   setupPeriodicReporting() {
     this.state.reportTimer = setInterval(() => {
-      this.generatePerformanceReport();
+      const report = this.generatePerformanceReport();
+      this.savePerformanceReport(report);
     }, this.config.reportInterval);
   }
 
   /**
    * Génère un rapport de performances
+   * @returns {Object} Rapport de performances
    */
   generatePerformanceReport() {
     const report = {
       timestamp: Date.now(),
       renderStats: this.calculateStats(this.metrics.renderTimes),
-      eventStats: this.calculateStats(this.metrics.eventProcessingTimes),
-      resourceUsage: this.analyzeResourceUsage(),
-      memoryUsage: this.getMemoryUsage(),
+      networkStats: this.calculateNetworkStats(),
+      memoryUsage: this.getCurrentMemoryUsage(),
     };
-
-    // Déclencher des alertes si nécessaire
-    this.checkPerformanceThresholds(report);
-
-    // Sauvegarder le rapport
-    this.savePerformanceReport(report);
 
     return report;
   }
 
   /**
-   * Calcule les statistiques pour un ensemble de mesures
+   * Calcule les statistiques générales
    * @param {Array} measurements - Ensemble de mesures
-   * @returns {Object} Statistiques calculées
+   * @returns {Object|null} Statistiques calculées
    */
   calculateStats(measurements) {
     if (measurements.length === 0) return null;
 
     const times = measurements.map((m) => m.time);
-
     return {
       count: times.length,
       average: times.reduce((a, b) => a + b, 0) / times.length,
@@ -110,48 +212,29 @@ export default class PerformanceMonitor {
   }
 
   /**
-   * Analyse l'utilisation des ressources
-   * @returns {Object} Rapport d'utilisation des ressources
+   * Calcule les statistiques réseau
+   * @returns {Object} Statistiques réseau
    */
-  analyzeResourceUsage() {
-    if (this.metrics.resourceUsage.length === 0) return null;
+  calculateNetworkStats() {
+    if (this.metrics.networkPerformance.length === 0) return null;
 
-    // Grouper par type de ressource
-    const resourceByType = this.metrics.resourceUsage.reduce(
-      (acc, resource) => {
-        if (!acc[resource.initiatorType]) {
-          acc[resource.initiatorType] = [];
-        }
-        acc[resource.initiatorType].push(resource);
-        return acc;
-      },
-      {}
-    );
+    const totalTransferSize = this.metrics.networkPerformance.reduce((sum, entry) => sum + entry.transferSize, 0);
 
-    // Calculer les statistiques par type
-    const resourceStats = {};
-    Object.entries(resourceByType).forEach(([type, resources]) => {
-      resourceStats[type] = {
-        count: resources.length,
-        totalTransferSize: resources.reduce(
-          (sum, r) => sum + r.transferSize,
-          0
-        ),
-        averageDuration:
-          resources.reduce((sum, r) => sum + r.duration, 0) / resources.length,
-      };
-    });
-
-    return resourceStats;
+    return {
+      totalRequests: this.metrics.networkPerformance.length,
+      totalTransferSize,
+      averageRequestDuration:
+        this.metrics.networkPerformance.reduce((sum, entry) => sum + entry.duration, 0) /
+        this.metrics.networkPerformance.length,
+    };
   }
 
   /**
-   * Récupère l'utilisation mémoire
-   * @returns {Object} Informations sur l'utilisation mémoire
+   * Récupère l'utilisation mémoire actuelle
+   * @returns {Object|null} Informations sur l'utilisation mémoire
    */
-  getMemoryUsage() {
-    // Vérifier la disponibilité de l'API Performance Memory
-    if ("memory" in performance) {
+  getCurrentMemoryUsage() {
+    if ('performance' in window && 'memory' in performance) {
       const memory = performance.memory;
       return {
         totalJSHeapSize: memory.totalJSHeapSize,
@@ -163,186 +246,21 @@ export default class PerformanceMonitor {
   }
 
   /**
-   * Vérifie les seuils de performances
-   * @param {Object} report - Rapport de performances
-   */
-  checkPerformanceThresholds(report) {
-    const issues = [];
-
-    // Vérifier les temps de rendu
-    if (
-      report.renderStats &&
-      report.renderStats.average > this.config.slowRenderThreshold
-    ) {
-      issues.push({
-        type: "slow-render",
-        message: `Temps de rendu moyen élevé : ${report.renderStats.average.toFixed(
-          2
-        )}ms`,
-        severity: "warning",
-      });
-    }
-
-    // Vérifier les événements
-    if (
-      report.eventStats &&
-      report.eventStats.average > this.config.slowEventThreshold
-    ) {
-      issues.push({
-        type: "slow-events",
-        message: `Traitement d'événements lent : ${report.eventStats.average.toFixed(
-          2
-        )}ms`,
-        severity: "warning",
-      });
-    }
-
-    // Vérifier l'utilisation mémoire
-    if (report.memoryUsage) {
-      const memoryUsagePercent =
-        (report.memoryUsage.usedJSHeapSize /
-          report.memoryUsage.jsHeapSizeLimit) *
-        100;
-
-      if (memoryUsagePercent > 80) {
-        issues.push({
-          type: "high-memory",
-          message: `Utilisation mémoire élevée : ${memoryUsagePercent.toFixed(
-            2
-          )}%`,
-          severity: "critical",
-        });
-      }
-    }
-
-    // Gérer les problèmes détectés
-    if (issues.length > 0) {
-      this.handlePerformanceIssues(issues);
-    }
-  }
-
-  /**
-   * Gère les problèmes de performances détectés
-   * @param {Array} issues - Liste des problèmes
-   */
-  handlePerformanceIssues(issues) {
-    // Notifications
-    this.notifyPerformanceIssues(issues);
-
-    // Déclencher les gestionnaires d'événements
-    issues.forEach((issue) => {
-      const handlers =
-        issue.severity === "critical"
-          ? this.handlers.criticalIssue
-          : this.handlers.slowPerformance;
-
-      handlers.forEach((handler) => handler(issue));
-    });
-  }
-
-  /**
-   * Notifie des problèmes de performances
-   * @param {Array} issues - Liste des problèmes
-   */
-  notifyPerformanceIssues(issues) {
-    // Créer une notification visuelle
-    const notificationContainer = document.createElement("div");
-    notificationContainer.className = "performance-issues-notification";
-
-    const title = document.createElement("h3");
-    title.textContent = "Problèmes de performances détectés";
-    notificationContainer.appendChild(title);
-
-    // Liste des problèmes
-    const issueList = document.createElement("ul");
-    issues.forEach((issue) => {
-      const issueItem = document.createElement("li");
-      issueItem.className = `issue-${issue.severity}`;
-      issueItem.textContent = issue.message;
-      issueList.appendChild(issueItem);
-    });
-    notificationContainer.appendChild(issueList);
-
-    // Style de la notification
-    notificationContainer.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: #f44336;
-        color: white;
-        padding: 15px;
-        border-radius: 4px;
-        z-index: 1000;
-        max-width: 300px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      `;
-
-    // Ajouter au document
-    document.body.appendChild(notificationContainer);
-
-    // Supprimer après 10 secondes
-    setTimeout(() => {
-      document.body.removeChild(notificationContainer);
-    }, 10000);
-  }
-
-  /**
    * Sauvegarde un rapport de performances
    * @param {Object} report - Rapport de performances
    */
   savePerformanceReport(report) {
     try {
-      const performanceLogs = JSON.parse(
-        localStorage.getItem(this.config.storageKey) || "[]"
-      );
+      // Ajouter le rapport aux logs
+      this.performanceLogs.unshift(report);
 
-      // Ajouter le nouveau rapport
-      performanceLogs.unshift(report);
+      // Limiter le nombre de logs
+      const trimmedLogs = this.performanceLogs.slice(0, this.config.maxLogEntries);
 
-      // Limiter le nombre de rapports
-      const trimmedLogs = performanceLogs.slice(0, this.config.maxLogEntries);
-
-      // Sauvegarder
+      // Sauvegarder dans le stockage local
       localStorage.setItem(this.config.storageKey, JSON.stringify(trimmedLogs));
     } catch (error) {
-      console.error(
-        "Erreur lors de la sauvegarde du rapport de performances",
-        error
-      );
-    }
-  }
-
-  /**
-   * Ajoute un gestionnaire pour les problèmes de performances
-   * @param {string} type - Type de problème ('slowPerformance' ou 'criticalIssue')
-   * @param {Function} handler - Fonction de gestion
-   */
-  addPerformanceHandler(type, handler) {
-    if (this.handlers[type]) {
-      this.handlers[type].push(handler);
-    }
-  }
-
-  /**
-   * Nettoie les logs de performances
-   */
-  clearPerformanceLogs() {
-    try {
-      localStorage.removeItem(this.config.storageKey);
-
-      // Réinitialiser les métriques
-      this.metrics = {
-        renderTimes: [],
-        eventProcessingTimes: [],
-        resourceUsage: [],
-        networkPerformance: [],
-        memoryUsage: [],
-      };
-    } catch (error) {
-      console.error(
-        "Erreur lors de la suppression des logs de performances",
-        error
-      );
+      console.error('Erreur lors de la sauvegarde du rapport de performances', error);
     }
   }
 
@@ -361,6 +279,30 @@ export default class PerformanceMonitor {
     this.state.started = false;
     this.state.startTime = null;
 
-    console.log("Monitoring de performances arrêté");
+    console.log('Monitoring de performances arrêté');
+  }
+
+  /**
+   * Réinitialise le moniteur de performances
+   */
+  reset() {
+    // Arrêter le monitoring en cours
+    this.stop();
+
+    // Réinitialiser les métriques
+    this.metrics = {
+      renderTimes: [],
+      eventProcessingTimes: [],
+      resourceUsage: [],
+      networkPerformance: [],
+      memoryUsage: [],
+    };
+
+    // Supprimer les logs de performance
+    this.performanceLogs = [];
+    localStorage.removeItem(this.config.storageKey);
+
+    // Redémarrer le monitoring
+    this.initialize();
   }
 }
