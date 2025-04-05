@@ -150,7 +150,7 @@ class Application {
    */
   checkBrowserCompatibility() {
     // Liste des fonctionnalités requises
-    const requiredFeatures = [
+    const requiredFeatures = this.config.requiredFeatures || [
       "localStorage",
       "JSON.parse",
       "fetch",
@@ -241,19 +241,21 @@ class Application {
    * @param {string} [oldVersion] - Version précédente
    */
   performStorageMigration(oldVersion) {
-    // Exemple de migration
     const migrations = {
       "2.0.0": () => {
-        // Convertir les anciens formats de stockage
-        const oldFavorites = localStorage.getItem("favorites");
-        if (oldFavorites) {
-          try {
+        try {
+          const oldFavorites = localStorage.getItem("favorites");
+          if (oldFavorites) {
             const parsedFavorites = JSON.parse(oldFavorites);
             StorageManager.set("mserv_favorites", parsedFavorites);
             localStorage.removeItem("favorites");
-          } catch (error) {
-            console.warn("Erreur lors de la migration des favoris", error);
           }
+        } catch (error) {
+          console.error(
+            "Erreur critique lors de la migration des favoris",
+            error
+          );
+          // Potentiellement notifier l'utilisateur ou journaliser l'erreur
         }
       },
     };
@@ -273,17 +275,16 @@ class Application {
    * @returns {boolean} Indique si la nouvelle version est plus récente
    */
   isNewerVersion(newVersion, oldVersion) {
-    const parseVersion = (version) => version.split(".").map(Number);
-
-    const newParts = parseVersion(newVersion);
-    const oldParts = parseVersion(oldVersion);
+    const newParts = newVersion.split(".").map(Number);
+    const oldParts = oldVersion.split(".").map(Number);
 
     for (let i = 0; i < Math.max(newParts.length, oldParts.length); i++) {
       const newPart = newParts[i] || 0;
       const oldPart = oldParts[i] || 0;
 
-      if (newPart > oldPart) return true;
-      if (newPart < oldPart) return false;
+      if (newPart !== oldPart) {
+        return newPart > oldPart;
+      }
     }
 
     return false;
@@ -293,10 +294,8 @@ class Application {
    * Nettoie les données obsolètes
    */
   cleanupOldData() {
-    // Supprimer les données datant de plus de 90 jours
     const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
 
-    // Nettoyer les différents types de données
     const dataTypesToClean = [
       "mserv_favorites",
       "mserv_recent_services",
@@ -305,20 +304,22 @@ class Application {
     ];
 
     dataTypesToClean.forEach((key) => {
-      const data = StorageManager.get(key);
+      try {
+        const data = StorageManager.get(key);
 
-      if (Array.isArray(data)) {
-        // Filtrer les entrées récentes
-        const cleanedData = data.filter(
-          (item) => item.timestamp && item.timestamp > ninetyDaysAgo
-        );
+        if (Array.isArray(data)) {
+          const cleanedData = data.filter(
+            (item) => item.timestamp && item.timestamp > ninetyDaysAgo
+          );
 
-        StorageManager.set(key, cleanedData);
-      } else if (data && data.timestamp) {
-        // Vérifier l'horodatage pour un objet unique
-        if (data.timestamp < ninetyDaysAgo) {
-          StorageManager.remove(key);
+          StorageManager.set(key, cleanedData);
+        } else if (data && data.timestamp) {
+          if (data.timestamp < ninetyDaysAgo) {
+            StorageManager.remove(key);
+          }
         }
+      } catch (error) {
+        console.error(`Erreur lors du nettoyage de ${key}:`, error);
       }
     });
   }
