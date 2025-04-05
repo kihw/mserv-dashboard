@@ -145,7 +145,10 @@ export default class StorageManager {
    */
   static handleStorageFull(key, data) {
     console.warn("Stockage local presque plein. Tentative de libération d'espace.");
-
+    console.group('Stockage local plein');
+    console.warn('Clé qui a échoué:', key);
+    console.warn('Taille actuelle:', this.calculateStorageSize());
+    console.groupEnd();
     // Stratégies de libération d'espace
     const strategies = [this.removeExpiredEntries.bind(this), this.removeOldestEntries.bind(this)];
 
@@ -164,6 +167,11 @@ export default class StorageManager {
 
     // Dernier recours
     this.notifyStorageFull(key);
+    createNotification(
+      'Espace de stockage insuffisant. Certaines données pourraient ne pas être sauvegardées.',
+      'warning',
+      7000
+    );
   }
 
   /**

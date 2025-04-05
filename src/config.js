@@ -23,7 +23,20 @@ export default {
     minLength: 2,
     maxResults: 10,
   },
+  validate() {
+    const validationRules = {
+      'app.environment': (value) => ['development', 'production', 'staging'].includes(value),
+      'services.maxCustomServices': (value) => value > 0 && value <= 50,
+      // Autres règles de validation
+    };
 
+    Object.entries(validationRules).forEach(([path, validator]) => {
+      const value = this.get(path);
+      if (!validator(value)) {
+        console.warn(`Configuration invalide : ${path}`);
+      }
+    });
+  },
   // Configuration des thèmes
   themes: {
     default: 'dark',

@@ -6,7 +6,7 @@ import Config from './config.js';
 import Dashboard from './core/dashboard.js';
 import StorageManager from './utils/storage-manager.js';
 import { detectStorageSupport } from './utils/dom-helpers.js';
-
+import { Suspense, lazy } from 'react';
 class Application {
   constructor() {
     // Configuration globale
@@ -148,8 +148,10 @@ class Application {
    */
   initializeDashboard() {
     try {
-      this.dashboard = new Dashboard(this);
-      this.dashboard.initialize();
+      Suspense(() => {
+        this.dashboard = new Dashboard(this);
+        this.dashboard.initialize();
+      });
     } catch (error) {
       console.error("Erreur lors de l'initialisation du tableau de bord", error);
       this.logError({

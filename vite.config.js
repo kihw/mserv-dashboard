@@ -3,6 +3,14 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from 'path';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@core': path.resolve(__dirname, 'src/core'),
+      '@modules': path.resolve(__dirname, 'src/modules'),
+      '@utils': path.resolve(__dirname, 'src/utils'),
+    },
+  },
   server: {
     port: 3000,
     https: false,

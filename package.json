@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "lint": "eslint src --ext js",
     "format": "prettier --write \"src/**/*.js\"",
-    "test": "vitest"
+    "test": "vitest",
+    "lint:fix": "eslint src --ext js --fix",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged"
   },
   "keywords": [
     "dashboard",
