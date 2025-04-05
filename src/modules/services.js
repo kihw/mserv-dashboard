@@ -45,61 +45,44 @@ export default class ServicesManager {
 
   async loadServicesConfiguration() {
     try {
-      // Allow retry with alternative fallback paths
-      const configPaths = ['/config/services.json', '/services.json', 'config/services.json', './config/services.json'];
+      // Tentatives avec différents chemins
+      const configPaths = [
+        '/config/services.json',
+        './config/services.json',
+        '../config/services.json',
+        'config/services.json',
+      ];
 
-      let response;
+      let serviceConfig = null;
+
       for (const path of configPaths) {
         try {
-          response = await fetch(path);
-          if (response.ok) break;
+          const response = await fetch(path);
+          if (response.ok) {
+            serviceConfig = await response.json();
+            console.log(`Services chargés depuis: ${path}`);
+            break;
+          }
         } catch (err) {
-          console.warn(`Failed to fetch from ${path}:`, err);
+          console.warn(`Échec du chargement depuis ${path}`);
         }
       }
 
-      if (!response || !response.ok) {
-        throw new Error('Could not load services configuration');
+      if (!serviceConfig) {
+        throw new Error('Impossible de charger la configuration des services');
       }
 
-      const serviceConfig = await response.json();
-
-      // Merge default and custom services
+      // Fusion des services par défaut et personnalisés
       this.services = [
         ...(serviceConfig.default_services || []),
         ...(this.loadCustomServices(serviceConfig.custom_services) || []),
       ];
 
-      // Fallback to default if no services
-      if (this.services.length === 0) {
-        this.services = [
-          {
-            id: 'placeholder',
-            name: 'No Services',
-            description: 'No services could be loaded',
-            url: '#',
-            icon: 'warning',
-            category: 'tools',
-          },
-        ];
-      }
-
-      // Index services
-      this.indexServices();
+      // Rendre les services
+      this.renderServices();
     } catch (error) {
-      console.error('Error loading services configuration:', error);
-
-      // Set a default placeholder service
-      this.services = [
-        {
-          id: 'placeholder',
-          name: 'Configuration Error',
-          description: 'Could not load services. Check configuration.',
-          url: '#',
-          icon: 'alert-triangle',
-          category: 'tools',
-        },
-      ];
+      console.error('Erreur de chargement des services:', error);
+      // Configurer des services fallback si nécessaire
     }
   }
   /**

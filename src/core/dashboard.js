@@ -2,13 +2,13 @@
  * Classe principale du tableau de bord
  * Coordonne tous les modules et fonctionnalités
  */
-import config from "../config.js";
-import EventManager from "./event-manager.js";
-import ThemeManager from "./theme-manager.js";
-import SearchManager from "./search-manager.js";
-import FavoritesManager from "../modules/favorites.js";
-import ServicesManager from "../modules/services.js";
-import WidgetManager from "../modules/widgets.js";
+import config from '../config.js';
+import EventManager from './event-manager.js';
+import ThemeManager from './theme-manager.js';
+import SearchManager from './search-manager.js';
+import FavoritesManager from '../modules/favorites.js';
+import ServicesManager from '../modules/services.js';
+import WidgetManager from '../modules/widgets.js';
 
 export default class Dashboard {
   constructor() {
@@ -44,11 +44,19 @@ export default class Dashboard {
     // Configuration des gestionnaires
     this.setupManagers();
 
+    // Configuration des événements personnalisés
+    this.setupCustomEvents();
+
+    // Configuration du bouton de thème (ajouter ici plutôt que dans setupCustomEvents)
+    this.setupThemeToggle();
+
     // Marquer comme initialisé
     this.state.initialized = true;
 
     // Dispatch d'un événement d'initialisation
-    this.eventManager.emit("dashboard:initialized");
+    if (this.eventManager) {
+      this.eventManager.emit('dashboard:initialized');
+    }
   }
 
   /**
@@ -83,8 +91,10 @@ export default class Dashboard {
    */
   setupCustomEvents() {
     // Exemple d'événements personnalisés
-    this.eventManager.on("theme:change", this.handleThemeChange.bind(this));
-    this.eventManager.on("search:performed", this.handleSearch.bind(this));
+    if (this.eventManager) {
+      this.eventManager.on('theme:change', this.handleThemeChange.bind(this));
+      this.eventManager.on('search:performed', this.handleSearch.bind(this));
+    }
   }
 
   /**
@@ -105,8 +115,8 @@ export default class Dashboard {
    */
   updateUIForTheme(theme) {
     // Logique de mise à jour spécifique au thème
-    document.body.classList.toggle("dark-theme", theme === "dark");
-    document.body.classList.toggle("light-theme", theme === "light");
+    document.body.classList.toggle('dark-theme', theme === 'dark');
+    document.body.classList.toggle('light-theme', theme === 'light');
   }
 
   /**
@@ -115,7 +125,7 @@ export default class Dashboard {
    */
   handleSearch(searchData) {
     // Traitement centralisé de la recherche
-    console.log("Recherche effectuée", searchData);
+    console.log('Recherche effectuée', searchData);
   }
 
   /**
@@ -126,13 +136,13 @@ export default class Dashboard {
     const width = window.innerWidth;
 
     if (width < 600) {
-      document.body.classList.add("mobile-layout");
+      document.body.classList.add('mobile-layout');
     } else {
-      document.body.classList.remove("mobile-layout");
+      document.body.classList.remove('mobile-layout');
     }
 
     // Notification des modules
-    this.eventManager.emit("layout:changed", { width });
+    this.eventManager.emit('layout:changed', { width });
   }
 
   /**
@@ -144,7 +154,7 @@ export default class Dashboard {
     this.state.activeModals = [];
 
     // Événement de fermeture
-    this.eventManager.emit("panels:closed");
+    this.eventManager.emit('panels:closed');
   }
 
   /**
@@ -162,8 +172,8 @@ export default class Dashboard {
    */
   createHelpModal() {
     // Implémentation simplifiée d'un modal d'aide
-    const modal = document.createElement("div");
-    modal.className = "help-modal";
+    const modal = document.createElement('div');
+    modal.className = 'help-modal';
     modal.innerHTML = `
       <div class="help-modal-content">
         <h2>Raccourcis et aide</h2>
@@ -182,7 +192,7 @@ export default class Dashboard {
     };
 
     // Gestionnaire de fermeture
-    modal.querySelector(".close-help").addEventListener("click", () => {
+    modal.querySelector('.close-help').addEventListener('click', () => {
       modal.close();
     });
 
@@ -193,8 +203,8 @@ export default class Dashboard {
   }
   setupCustomEvents() {
     // Exemple d'événements personnalisés
-    this.eventManager.on("theme:change", this.handleThemeChange.bind(this));
-    this.eventManager.on("search:performed", this.handleSearch.bind(this));
+    this.eventManager.on('theme:change', this.handleThemeChange.bind(this));
+    this.eventManager.on('search:performed', this.handleSearch.bind(this));
 
     // Configurer le bouton de changement de thème
     this.setupThemeToggle();
@@ -204,18 +214,18 @@ export default class Dashboard {
    * Configuration du bouton de changement de thème
    */
   setupThemeToggle() {
-    const themeToggleBtn = document.getElementById("theme-toggle");
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener("click", () => {
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn && this.themeManager) {
+      themeToggleBtn.addEventListener('click', () => {
         this.themeManager.toggleTheme();
       });
 
       // Mettre à jour l'icône du bouton
       this.themeManager.addThemeListener((newTheme) => {
-        const icon = themeToggleBtn.querySelector("svg");
+        const icon = themeToggleBtn.querySelector('svg');
         if (icon) {
           icon.innerHTML =
-            newTheme === "dark"
+            newTheme === 'dark'
               ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>` // Lune
               : `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
         }
@@ -232,6 +242,6 @@ export default class Dashboard {
 }
 
 // Initialisation au chargement du DOM
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   window.Dashboard = Dashboard.start();
 });

@@ -126,23 +126,68 @@ class Application {
       }
     }, 10000);
   }
+  /**
+   * Effectue un diagnostic système
+   */
+  performSystemDiagnosis() {
+    console.group('Diagnostic du système');
 
+    // Vérifier les éléments DOM critiques
+    const domElements = {
+      app: document.getElementById('app'),
+      search: document.getElementById('search'),
+      'theme-toggle': document.getElementById('theme-toggle'),
+      'favorites-list': document.getElementById('favorites-list'),
+      'categories-grid': document.querySelector('.categories-grid'),
+    };
+
+    console.log(
+      'Éléments DOM:',
+      Object.entries(domElements)
+        .map(([id, el]) => `${id}: ${el ? '✓' : '✗'}`)
+        .join(', ')
+    );
+
+    // Vérifier les gestionnaires
+    if (this.dashboard) {
+      const managers = {
+        eventManager: this.dashboard.eventManager,
+        themeManager: this.dashboard.themeManager,
+        searchManager: this.dashboard.searchManager,
+        servicesManager: this.dashboard.servicesManager,
+        favoritesManager: this.dashboard.favoritesManager,
+      };
+
+      console.log(
+        'Gestionnaires:',
+        Object.entries(managers)
+          .map(([name, mgr]) => `${name}: ${mgr ? '✓' : '✗'}`)
+          .join(', ')
+      );
+    }
+
+    // Vérifier le stockage local
+    try {
+      const testKey = 'mserv_test';
+      localStorage.setItem(testKey, Date.now());
+      localStorage.removeItem(testKey);
+      console.log('Stockage local: ✓');
+    } catch (e) {
+      console.log('Stockage local: ✗', e.message);
+    }
+
+    console.groupEnd();
+  }
   /**
    * Initialisation de l'application
    */
   initialize() {
+    // Créer le tableau de bord et attendre qu'il soit initialisé
+    this.dashboard = new Dashboard();
+
     // Marquer comme initialisé
     this.state.initialized = true;
-
-    // Déclencher l'événement d'initialisation
-    const initEvent = new CustomEvent('app:initialized', {
-      detail: {
-        version: this.state.version,
-        startTime: this.state.startTime,
-      },
-    });
-    window.dispatchEvent(initEvent);
-
+    this.performSystemDiagnosis();
     // Journal de démarrage
     console.log(`Application démarrée - Version ${this.state.version}`);
   }
@@ -157,8 +202,5 @@ class Application {
 }
 
 // Démarrer l'application au chargement du DOM
-document.addEventListener('DOMContentLoaded', () => {
-  window.App = Application.start();
-});
-
+window.App = Application.start();
 export default Application;

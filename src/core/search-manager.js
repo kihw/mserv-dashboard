@@ -1,7 +1,7 @@
 /**
  * Gestionnaire de recherche avancé
  */
-import config from "../config.js";
+import config from '../config.js';
 
 export default class SearchManager {
   constructor(dashboard) {
@@ -16,15 +16,27 @@ export default class SearchManager {
    * Initialisation du gestionnaire de recherche
    */
   initialize() {
-    this.searchInput = document.getElementById("search");
-    this.services = document.querySelectorAll(".service");
-    this.categories = document.querySelectorAll(".category");
+    this.searchInput = document.getElementById('search');
+
+    // Attendre que les services soient rendus
+    setTimeout(() => {
+      this.services = document.querySelectorAll('.service');
+      this.categories = document.querySelectorAll('.category');
+
+      if (this.services.length === 0) {
+        console.warn('Aucun service trouvé pour la recherche');
+      }
+
+      if (this.categories.length === 0) {
+        console.warn('Aucune catégorie trouvée pour la recherche');
+      }
+    }, 500);
 
     if (this.searchInput) {
-      this.searchInput.addEventListener(
-        "input",
-        this.debounceSearch.bind(this)
-      );
+      this.searchInput.addEventListener('input', this.debounceSearch.bind(this));
+      console.log('Recherche initialisée avec succès');
+    } else {
+      console.warn('Élément de recherche non trouvé');
     }
   }
 
@@ -67,16 +79,9 @@ export default class SearchManager {
    * @returns {number} Score de pertinence
    */
   calculateSearchScore(service, searchTerm) {
-    const serviceName = service
-      .querySelector(".service-name")
-      .textContent.toLowerCase();
-    const serviceDesc = service
-      .querySelector(".service-description")
-      .textContent.toLowerCase();
-    const serviceCategory = service
-      .closest(".category")
-      .querySelector(".category-header h2")
-      .textContent.toLowerCase();
+    const serviceName = service.querySelector('.service-name').textContent.toLowerCase();
+    const serviceDesc = service.querySelector('.service-description').textContent.toLowerCase();
+    const serviceCategory = service.closest('.category').querySelector('.category-header h2').textContent.toLowerCase();
 
     let score = 0;
 
@@ -111,13 +116,10 @@ export default class SearchManager {
    */
   updateServiceVisibility(service, score) {
     const isVisible = score > 0;
-    service.style.display = isVisible ? "flex" : "none";
+    service.style.display = isVisible ? 'flex' : 'none';
 
     // Mise en évidence
-    service.classList.toggle(
-      "search-highlight",
-      isVisible && score >= config.search.highlightThreshold
-    );
+    service.classList.toggle('search-highlight', isVisible && score >= config.search.highlightThreshold);
   }
 
   /**
@@ -125,10 +127,8 @@ export default class SearchManager {
    */
   updateCategoryVisibility() {
     this.categories.forEach((category) => {
-      const visibleServices = category.querySelectorAll(
-        '.service[style="display: flex;"]'
-      );
-      category.style.display = visibleServices.length > 0 ? "flex" : "none";
+      const visibleServices = category.querySelectorAll('.service[style="display: flex;"]');
+      category.style.display = visibleServices.length > 0 ? 'flex' : 'none';
     });
   }
 
@@ -138,12 +138,12 @@ export default class SearchManager {
   resetSearch() {
     // Réafficher tous les services et catégories
     this.services.forEach((service) => {
-      service.style.display = "flex";
-      service.classList.remove("search-highlight");
+      service.style.display = 'flex';
+      service.classList.remove('search-highlight');
     });
 
     this.categories.forEach((category) => {
-      category.style.display = "flex";
+      category.style.display = 'flex';
     });
   }
 
@@ -161,7 +161,7 @@ export default class SearchManager {
    */
   clear() {
     if (this.searchInput) {
-      this.searchInput.value = "";
+      this.searchInput.value = '';
       this.resetSearch();
     }
   }

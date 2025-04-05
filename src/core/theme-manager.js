@@ -1,8 +1,8 @@
 /**
  * Gestionnaire de thème avancé
  */
-import config from "../config.js";
-import StorageManager from "../utils/storage-manager.js";
+import config from '../config.js';
+import StorageManager from '../utils/storage-manager.js';
 
 export default class ThemeManager {
   constructor() {
@@ -10,7 +10,7 @@ export default class ThemeManager {
     this.config = config.themes;
 
     // Clé de stockage pour le thème
-    this.storageKey = "mserv_theme_preference";
+    this.storageKey = 'mserv_theme_preference';
 
     // Écouteurs d'événements
     this.listeners = new Set();
@@ -32,13 +32,11 @@ export default class ThemeManager {
    */
   setupThemeEvents() {
     // Écouter les changements système de préférence de couleur
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (this.getCurrentTheme() === "system") {
-          this.applyTheme("system");
-        }
-      });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (this.getCurrentTheme() === 'system') {
+        this.applyTheme('system');
+      }
+    });
   }
 
   /**
@@ -49,53 +47,29 @@ export default class ThemeManager {
     return StorageManager.get(this.storageKey, this.config.default);
   }
 
-  /**
-   * Applique un thème
-   * @param {string} theme - Thème à appliquer ('light', 'dark', 'system')
-   */
   applyTheme(theme) {
     // Gérer le thème système
-    if (theme === "system") {
-      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+    if (theme === 'system') {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
+
+    // Appliquer les classes au document
+    document.documentElement.classList.remove('light-theme', 'dark-theme');
+    document.documentElement.classList.add(`${theme}-theme`);
 
     // Appliquer les variables CSS
     const themeConfig = this.config[theme];
     if (themeConfig) {
-      document.documentElement.style.setProperty(
-        "--bg-primary",
-        themeConfig.bgPrimary
-      );
-      document.documentElement.style.setProperty(
-        "--bg-secondary",
-        themeConfig.bgSecondary
-      );
-      document.documentElement.style.setProperty(
-        "--bg-tertiary",
-        themeConfig.bgTertiary
-      );
-      document.documentElement.style.setProperty(
-        "--text-primary",
-        themeConfig.textPrimary
-      );
-      document.documentElement.style.setProperty(
-        "--text-secondary",
-        themeConfig.textSecondary
-      );
-      document.documentElement.style.setProperty(
-        "--accent-color",
-        themeConfig.accentColor
-      );
+      document.documentElement.style.setProperty('--bg-primary', themeConfig.bgPrimary);
+      document.documentElement.style.setProperty('--bg-secondary', themeConfig.bgSecondary);
+      document.documentElement.style.setProperty('--bg-tertiary', themeConfig.bgTertiary);
+      document.documentElement.style.setProperty('--text-primary', themeConfig.textPrimary);
+      document.documentElement.style.setProperty('--text-secondary', themeConfig.textSecondary);
+      document.documentElement.style.setProperty('--accent-color', themeConfig.accentColor);
     }
 
-    // Ajouter des classes pour le style
-    document.documentElement.classList.remove("light-theme", "dark-theme");
-    document.documentElement.classList.add(`${theme}-theme`);
-
     // Sauvegarder la préférence
-    StorageManager.set(this.storageKey, theme);
+    localStorage.setItem(this.storageKey, theme);
 
     // Notifier les écouteurs
     this.notifyListeners(theme);
@@ -106,7 +80,7 @@ export default class ThemeManager {
    */
   toggleTheme() {
     const currentTheme = this.getCurrentTheme();
-    const themes = ["light", "dark", "system"];
+    const themes = ['light', 'dark', 'system'];
     const currentIndex = themes.indexOf(currentTheme);
     const nextTheme = themes[(currentIndex + 1) % themes.length];
 
@@ -138,7 +112,7 @@ export default class ThemeManager {
       try {
         listener(newTheme);
       } catch (error) {
-        console.error("Erreur dans un écouteur de thème", error);
+        console.error('Erreur dans un écouteur de thème', error);
       }
     });
   }
