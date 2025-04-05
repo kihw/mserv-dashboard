@@ -3,75 +3,175 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mserv.wtf Dashboard</title>
-
-    <!-- CSS Base -->
-    <link rel="stylesheet" href="/static/css/base.css" />
-    <link rel="stylesheet" href="/static/css/components.css" />
-    <link rel="stylesheet" href="/static/css/themes.css" />
+    <meta name="description" content="Tableau de bord pour les services mserv.wtf" />
+    <meta name="author" content="kihw" />
+    <title>mserv.wtf - Tableau de Bord</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
 
-    <!-- Preload main script -->
-    <link rel="modulepreload" href="/src/main.js" />
+    <!-- Fonts -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
+    />
 
-    <!-- Meta Tags -->
-    <meta name="description" content="Dashboard centralisé pour vos services auto-hébergés" />
-    <meta name="theme-color" content="#7371fc" />
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
   </head>
   <body>
-    <div id="app" class="dashboard">
-      <header class="dashboard-header">
+    <div class="container">
+      <!-- Barre supérieure -->
+      <div class="top-bar">
         <div class="logo">
-          <h1>mserv.wtf</h1>
+          <i class="fas fa-server"></i>
+          <span>mserv.wtf</span>
         </div>
-        <nav class="dashboard-nav">
-          <button id="theme-toggle" aria-label="Toggle Theme">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
+
+        <div class="controls">
+          <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un service..." />
+          </div>
+
+          <div class="theme-switch" id="themeSwitch">
+            <div class="theme-switch-track">
+              <div class="theme-switch-thumb">
+                <i class="fas fa-sun" id="themeIcon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- "Météo" du système -->
+      <div class="weather-card">
+        <div class="weather-info">
+          <div class="weather-title">Système en bonne santé</div>
+          <div class="weather-desc">Tous les services sont opérationnels</div>
+          <div class="weather-temp">100%</div>
+          <div class="weather-details">
+            <div class="weather-detail">
+              <i class="fas fa-microchip"></i>
+              <span>CPU: <span id="cpu-usage">12</span>%</span>
+            </div>
+            <div class="weather-detail">
+              <i class="fas fa-memory"></i>
+              <span>RAM: <span id="ram-usage">4.2</span>GB/16GB</span>
+            </div>
+            <div class="weather-detail">
+              <i class="fas fa-thermometer-half"></i>
+              <span><span id="temperature">34</span>°C</span>
+            </div>
+          </div>
+        </div>
+        <div class="weather-icon">
+          <i class="fas fa-sun"></i>
+        </div>
+      </div>
+
+      <!-- Bandeau de statut système -->
+      <div class="system-banner">
+        <div class="banner-item status-good">
+          <div class="banner-icon">
+            <i class="fas fa-server"></i>
+          </div>
+          <div class="banner-content">
+            <div class="banner-value"><span id="active-services">18</span>/<span id="total-services">18</span></div>
+            <div class="banner-label">Services actifs</div>
+          </div>
+        </div>
+        <div class="banner-item status-warning">
+          <div class="banner-icon">
+            <i class="fas fa-hdd"></i>
+          </div>
+          <div class="banner-content">
+            <div class="banner-value"><span id="disk-usage">75</span>%</div>
+            <div class="banner-label">Espace disque</div>
+          </div>
+        </div>
+        <div class="banner-item">
+          <div class="banner-icon">
+            <i class="fas fa-network-wired"></i>
+          </div>
+          <div class="banner-content">
+            <div class="banner-value"><span id="network-speed">12.4</span> MB/s</div>
+            <div class="banner-label">Réseau</div>
+          </div>
+        </div>
+        <div class="banner-item">
+          <div class="banner-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="banner-content">
+            <div class="banner-value">Sécurisé</div>
+            <div class="banner-label">Firewall actif</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Favoris -->
+      <div class="favorites-section">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="fas fa-star"></i>
+            <span>Favoris</span>
+          </div>
+          <div class="section-actions">
+            <button class="action-button" id="editFavoritesBtn">
+              <i class="fas fa-cog"></i>
+              <span>Personnaliser</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="favorites-grid" id="favoritesGrid">
+          <!-- Générés dynamiquement depuis services.js -->
+        </div>
+      </div>
+
+      <!-- Groupes de services -->
+      <div id="serviceGroups">
+        <!-- Générés dynamiquement depuis services.js -->
+      </div>
+
+      <!-- Tous les services (vue en grille) -->
+      <div class="section-header">
+        <div class="section-title">
+          <i class="fas fa-th-large"></i>
+          <span>Tous les services</span>
+        </div>
+        <div class="section-actions">
+          <button class="action-button" id="viewToggle">
+            <i class="fas fa-list"></i>
+            <span>Vue liste</span>
           </button>
-          <input type="search" id="search" placeholder="Rechercher un service..." aria-label="Rechercher" />
-        </nav>
-      </header>
+        </div>
+      </div>
 
-      <main class="dashboard-content">
-        <section class="favorites">
-          <h2>Favoris</h2>
-          <div id="favorites-list" class="favorites-grid"></div>
-        </section>
+      <div class="dashboard" id="servicesGrid">
+        <!-- Générés dynamiquement depuis services.js -->
+      </div>
 
-        <section class="categories">
-          <h2>Services</h2>
-          <div class="categories-grid"></div>
-        </section>
-      </main>
-
-      <footer class="dashboard-footer">
-        <p>&copy; 2024 mserv.wtf Dashboard</p>
+      <footer>
+        <p>&copy; 2025 mserv.wtf | Tableau de bord personnalisé</p>
+        <p class="version">v3.0.0 | <a href="https://github.com/kihw/mserv-dashboard" target="_blank">GitHub</a></p>
       </footer>
     </div>
 
-    <!-- Main Application Script -->
-    <script type="module" src="/src/main.js"></script>
+    <!-- Scripts -->
+    <script src="js/services.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/system.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>

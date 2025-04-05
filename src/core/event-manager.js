@@ -1,7 +1,7 @@
 /**
  * Gestionnaire centralisé des événements
  */
-import config from "../config.js";
+import config from '../config.js';
 
 export default class EventManager {
   constructor(dashboard) {
@@ -26,18 +26,15 @@ export default class EventManager {
    */
   setupGlobalEvents() {
     // Événements de chargement et de redimensionnement
-    window.addEventListener("load", this.handleLoad.bind(this));
-    window.addEventListener(
-      "resize",
-      this.debounce(this.handleResize.bind(this), 250)
-    );
+    window.addEventListener('load', this.handleLoad.bind(this));
+    window.addEventListener('resize', this.debounce(this.handleResize.bind(this), 250));
   }
 
   /**
    * Configuration des raccourcis clavier
    */
   setupKeyboardShortcuts() {
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener('keydown', (event) => {
       // Raccourci de recherche
       if (this.matchesShortcut(event, config.events.keyboardShortcuts.search)) {
         event.preventDefault();
@@ -64,16 +61,16 @@ export default class EventManager {
    */
   matchesShortcut(event, shortcuts) {
     return shortcuts.some((shortcut) => {
-      const parts = shortcut.split("+");
+      const parts = shortcut.split('+');
       return parts.every((part) => {
         switch (part) {
-          case "Ctrl":
+          case 'Ctrl':
             return event.ctrlKey;
-          case "Cmd":
+          case 'Cmd':
             return event.metaKey;
-          case "Alt":
+          case 'Alt':
             return event.altKey;
-          case "Shift":
+          case 'Shift':
             return event.shiftKey;
           default:
             return event.key.toLowerCase() === part.toLowerCase();
@@ -105,7 +102,7 @@ export default class EventManager {
   handleCancel(event) {
     // Réinitialisation de la recherche
     if (document.activeElement === this.dashboard.search) {
-      this.dashboard.search.value = "";
+      this.dashboard.search.value = '';
       this.dashboard.search.blur();
     }
 

@@ -33,16 +33,21 @@ export default class ServicesManager {
       // Charger la configuration des services
       await this.loadServicesConfiguration();
 
-      // Configuration des événements
-      this.setupEventListeners();
-
       // Initialiser le rendu des services
       this.renderServices();
+
+      console.log('Services manager initialized successfully');
     } catch (error) {
       console.error("Erreur lors de l'initialisation des services", error);
+      // Utiliser une configuration par défaut
+      this.services = this.getFallbackConfig().default_services;
+      this.renderServices();
     }
   }
 
+  /**
+   * Charge la configuration des services
+   */
   async loadServicesConfiguration() {
     try {
       // Tentatives avec différents chemins
@@ -68,8 +73,10 @@ export default class ServicesManager {
         }
       }
 
+      // Si tous les chemins échouent, utiliser la configuration de secours
       if (!serviceConfig) {
-        throw new Error('Impossible de charger la configuration des services');
+        console.warn('Utilisation de la configuration de secours pour les services');
+        serviceConfig = this.getFallbackConfig();
       }
 
       // Fusion des services par défaut et personnalisés
@@ -90,7 +97,10 @@ export default class ServicesManager {
    */
   renderServices() {
     const categoriesGrid = document.querySelector('.categories-grid');
-    if (!categoriesGrid) return;
+    if (!categoriesGrid) {
+      console.warn('Élément .categories-grid non trouvé dans le DOM');
+      return;
+    }
 
     // Vider le conteneur existant
     categoriesGrid.innerHTML = '';
@@ -170,7 +180,12 @@ export default class ServicesManager {
     icon.className = 'service-icon';
     icon.innerHTML = `
       <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/${service.icon}.svg" 
+<<<<<<< HEAD
            alt="${service.name}" width="24" height="24">
+=======
+           alt="${service.name}" width="24" height="24"
+           onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%223%22 y=%223%22 width=%2218%22 height=%2218%22 rx=%222%22 ry=%222%22></rect><circle cx=%228.5%22 cy=%228.5%22 r=%221.5%22></circle><polyline points=%2221 15 16 10 5 21%22></polyline></svg>';">
+>>>>>>> c2679024f0020d9c52b8982a0aa15b57986534bc
     `;
 
     // Informations du service
@@ -217,8 +232,12 @@ export default class ServicesManager {
       const storedCustomServices = localStorage.getItem(this.config.storageKey);
 
       if (storedCustomServices) {
-        const parsedCustomServices = JSON.parse(storedCustomServices);
-        customServices = [...customServices, ...parsedCustomServices];
+        try {
+          const parsedCustomServices = JSON.parse(storedCustomServices);
+          customServices = [...customServices, ...parsedCustomServices];
+        } catch (error) {
+          console.warn('Erreur lors du parsing des services personnalisés stockés', error);
+        }
       }
 
       // Valider et filtrer les services personnalisés
@@ -235,6 +254,11 @@ export default class ServicesManager {
    * @returns {boolean} Indique si la configuration est valide
    */
   validateServiceConfig(serviceConfig) {
+    // Vérifier que serviceConfig est un objet
+    if (!serviceConfig || typeof serviceConfig !== 'object') {
+      return false;
+    }
+
     const requiredFields = ['id', 'name', 'description', 'url', 'icon', 'category'];
 
     // Vérifier la présence de tous les champs requis
@@ -267,9 +291,6 @@ export default class ServicesManager {
 
     // Ajouter le service
     this.services.push(serviceConfig);
-
-    // Réindexer les services
-    this.indexServices();
 
     // Sauvegarder les services personnalisés
     this.saveCustomServices();

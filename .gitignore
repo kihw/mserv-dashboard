@@ -1,5 +1,18 @@
-# Logs
-logs
+# Fichiers système et éditeurs
+.DS_Store
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers temporaires
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Logs et bases de données
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,40 +20,12 @@ yarn-error.log*
 
 # Dépendances
 node_modules/
-jspm_packages/
+bower_components/
 
-# Répertoires de build
+# Fichiers build
 dist/
 build/
 out/
-release/
 
-# Fichiers de configuration IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Fichiers de système
-.DS_Store
-Thumbs.db
-
-# Environnements
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Cache et fichiers temporaires
-.cache/
-.temp/
-*.tmp
-
-# Configuration spécifique au projet
-config/local-config.json
-services.local.json
-
-# Fichiers de développement
-*.dev.*
+# Fichiers de sauvegarde
+*.backup

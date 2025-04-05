@@ -28,16 +28,27 @@ export default class StorageManager {
       const stored = localStorage.getItem(key);
       if (!stored) return defaultValue;
 
-      // Vérifier l'expiration
-      const parsedData = JSON.parse(stored);
-
-      // Vérifier si les données sont expirées
-      if (parsedData.expires && Date.now() > parsedData.expires) {
-        this.remove(key);
-        return defaultValue;
+      // Pour les préférences de thème, traiter comme une chaîne simple
+      if (key === 'mserv_theme_preference') {
+        return stored;
       }
 
-      return parsedData.value;
+      // Pour les autres données, essayer de parser comme JSON
+      try {
+        // Vérifier l'expiration
+        const parsedData = JSON.parse(stored);
+
+        // Vérifier si les données sont expirées
+        if (parsedData.expires && Date.now() > parsedData.expires) {
+          this.remove(key);
+          return defaultValue;
+        }
+
+        return parsedData.value;
+      } catch (parseError) {
+        // Si le parsing échoue, retourner la valeur brute
+        return stored;
+      }
     } catch (error) {
       console.error(`Erreur lors de la récupération de ${key}:`, error);
       return defaultValue;
@@ -56,6 +67,12 @@ export default class StorageManager {
       // Vérifier les préfixes réservés
       if (!this.isValidKey(key)) {
         throw new Error(`Clé réservée ou invalide : ${key}`);
+      }
+
+      // Pour les préférences de thème, stocker directement comme chaîne
+      if (key === 'mserv_theme_preference') {
+        localStorage.setItem(key, value);
+        return true;
       }
 
       // Préparer les données avec expiration
@@ -164,8 +181,7 @@ export default class StorageManager {
           localStorage.removeItem(key);
         }
       } catch (error) {
-        // Supprimer les entrées corrompues
-        localStorage.removeItem(key);
+        // Ignorer les entrées qui ne sont pas au format JSON
       }
     });
   }
@@ -249,7 +265,7 @@ export default class StorageManager {
     // Supprimer toutes les entrées sauf celles spécifiées
     Object.keys(localStorage).forEach((key) => {
       if (!except.includes(key)) {
-        localStorage.removeChild(key);
+        localStorage.removeItem(key);
       }
     });
   }
