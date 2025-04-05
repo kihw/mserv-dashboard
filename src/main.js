@@ -130,10 +130,10 @@ class Application {
    * Effectue un diagnostic système
    */
   performSystemDiagnosis() {
-    console.group('Diagnostic du système');
+    console.group('Système Diagnostic');
 
-    // Vérifier les éléments DOM critiques
-    const domElements = {
+    // More detailed logging
+    const elementsToCheck = {
       app: document.getElementById('app'),
       search: document.getElementById('search'),
       'theme-toggle': document.getElementById('theme-toggle'),
@@ -141,40 +141,9 @@ class Application {
       'categories-grid': document.querySelector('.categories-grid'),
     };
 
-    console.log(
-      'Éléments DOM:',
-      Object.entries(domElements)
-        .map(([id, el]) => `${id}: ${el ? '✓' : '✗'}`)
-        .join(', ')
-    );
-
-    // Vérifier les gestionnaires
-    if (this.dashboard) {
-      const managers = {
-        eventManager: this.dashboard.eventManager,
-        themeManager: this.dashboard.themeManager,
-        searchManager: this.dashboard.searchManager,
-        servicesManager: this.dashboard.servicesManager,
-        favoritesManager: this.dashboard.favoritesManager,
-      };
-
-      console.log(
-        'Gestionnaires:',
-        Object.entries(managers)
-          .map(([name, mgr]) => `${name}: ${mgr ? '✓' : '✗'}`)
-          .join(', ')
-      );
-    }
-
-    // Vérifier le stockage local
-    try {
-      const testKey = 'mserv_test';
-      localStorage.setItem(testKey, Date.now());
-      localStorage.removeItem(testKey);
-      console.log('Stockage local: ✓');
-    } catch (e) {
-      console.log('Stockage local: ✗', e.message);
-    }
+    Object.entries(elementsToCheck).forEach(([name, element]) => {
+      console.log(`${name}: ${element ? '✓' : '✗'}`, element);
+    });
 
     console.groupEnd();
   }

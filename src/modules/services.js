@@ -305,7 +305,28 @@ export default class ServicesManager {
       console.error('Erreur lors de la sauvegarde des services personnalisés', error);
     }
   }
-
+  getFallbackConfig() {
+    return {
+      categories: [
+        { id: 'media', name: 'Médias', icon: 'play-circle' },
+        { id: 'admin', name: 'Administration', icon: 'settings' },
+        { id: 'dev', name: 'Développement', icon: 'code' },
+        { id: 'tools', name: 'Outils', icon: 'tool' },
+      ],
+      default_services: [
+        {
+          id: 'jellyfin',
+          name: 'Jellyfin',
+          description: 'Serveur multimédia open-source',
+          url: 'jellyfin.mserv.wtf',
+          icon: 'jellyfin',
+          category: 'media',
+        },
+        // Add other default services from your current config
+      ],
+      custom_services: [],
+    };
+  }
   /**
    * Vérifie si un service est un service par défaut
    * @param {Object} service - Service à vérifier
