@@ -244,14 +244,14 @@ export default class Dashboard {
     const serviceElement = document.createElement('div');
     serviceElement.classList.add('service-card');
     serviceElement.innerHTML = `
-      <div class="service-card__icon">
-        <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/${service.icon}.svg" alt="${service.name}">
-      </div>
-      <div class="service-card__details">
-        <h3 class="service-card__title">${service.name}</h3>
-        <p class="service-card__description">${service.description}</p>
-      </div>
-    `;
+    <div class="service-card__icon">
+      <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/${service.icon}.svg" alt="${service.name}">
+    </div>
+    <div class="service-card__details">
+      <h3 class="service-card__title">${service.name}</h3>
+      <p class="service-card__description">${service.description}</p>
+    </div>
+  `;
     return serviceElement;
   }
 
@@ -291,11 +291,11 @@ export default class Dashboard {
     const notification = document.createElement('div');
     notification.classList.add('error-notification');
     notification.innerHTML = `
-      <div class="notification__content">
-        <h3>${title}</h3>
-        <p>${message}</p>
-      </div>
-    `;
+    <div class="notification__content">
+      <h3>${title}</h3>
+      <p>${message}</p>
+    </div>
+  `;
     document.body.appendChild(notification);
 
     // Auto-fermeture
@@ -304,3 +304,4 @@ export default class Dashboard {
     }, 5000);
   }
 }
+// Removed duplicate definitions of constructor, initialize, initializeModules, and other methods.

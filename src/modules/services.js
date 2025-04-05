@@ -74,18 +74,121 @@ export default class ServicesManager {
         serviceConfig = this.getFallbackConfig();
       }
 
+      // Ajouter un statut aux services
+      const processedServices = this.processServiceConfig(serviceConfig);
+
       // Fusion des services par défaut et personnalisés
-      this.services = [
-        ...(serviceConfig.default_services || []),
-        ...(this.loadCustomServices(serviceConfig.custom_services) || []),
-      ];
+      this.services = processedServices;
 
       // Rendre les services
       this.renderServices();
     } catch (error) {
       console.error('Erreur de chargement des services:', error);
       // Configurer des services fallback si nécessaire
+      this.services = this.getFallbackConfig().default_services;
+      this.renderServices();
     }
+  }
+  /**
+   * Traite la configuration des services
+   * @param {Object} serviceConfig - Configuration des services
+   * @returns {Array} Services traités
+   */
+  processServiceConfig(serviceConfig) {
+    // Combiner les services par défaut et personnalisés
+    const combinedServices = [
+      ...(serviceConfig.default_services || []),
+      ...(this.loadCustomServices(serviceConfig.custom_services) || []),
+    ];
+
+    // Ajouter un statut aux services
+    return combinedServices.map((service) => ({
+      ...service,
+      status: this.checkServiceStatus(service),
+    }));
+  }
+
+  /**
+   * Vérifie le statut d'un service
+   * @param {Object} service - Service à vérifier
+   * @returns {string} Statut du service
+   */
+  checkServiceStatus(service) {
+    // Logique simple de vérification de statut
+    // TODO: Implémenter une vérification réelle du statut du service
+    try {
+      // Vérification basique basée sur l'URL
+      new URL(`https://${service.url}`);
+      // En pratique, vous voudriez faire une vraie requête de ping
+      return 'active';
+    } catch (error) {
+      return 'inactive';
+    }
+  }
+
+  /**
+   * Calcule le nombre total de services
+   * @returns {number} Nombre total de services
+   */
+  getTotalServices() {
+    return this.services.length;
+  }
+
+  /**
+   * Calcule le nombre de services actifs
+   * @returns {number} Nombre de services actifs
+   */
+  getActiveServices() {
+    return this.services.filter((service) => service.status === 'active').length;
+  }
+  /**
+   * Rend les services dans l'interface
+   */
+  renderServices() {
+    // Attendre que le DOM soit complètement chargé
+    if (document.readyState !== 'complete') {
+      document.addEventListener('DOMContentLoaded', () => this.renderServices());
+      return;
+    }
+
+    // Sélectionner le conteneur de catégories
+    let categoriesGrid = document.querySelector('.categories-grid');
+
+    // Créer le conteneur s'il n'existe pas
+    if (!categoriesGrid) {
+      categoriesGrid = document.createElement('div');
+      categoriesGrid.className = 'categories-grid';
+
+      // Trouver un conteneur parent approprié
+      const parentContainer =
+        document.querySelector('.dashboard-content') || document.querySelector('main') || document.body;
+      parentContainer.appendChild(categoriesGrid);
+    }
+
+    // Vider le conteneur existant
+    categoriesGrid.innerHTML = '';
+
+    // Vérifier si des services sont disponibles
+    if (this.services.length === 0) {
+      console.warn('Aucun service disponible pour le rendu');
+      categoriesGrid.innerHTML = `
+        <div class="no-services-message">
+          <p>Aucun service n'est actuellement configuré.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Grouper les services par catégorie
+    const servicesByCategory = this.groupServicesByCategory();
+
+    // Créer les sections de catégories
+    Object.entries(servicesByCategory).forEach(([categoryId, services]) => {
+      const category = this.createCategoryElement(categoryId, services);
+      categoriesGrid.appendChild(category);
+    });
+
+    console.log(`Rendu de ${this.services.length} services dans ${Object.keys(servicesByCategory).length} catégories`);
   }
   /**
    * Rend les services dans l'interface

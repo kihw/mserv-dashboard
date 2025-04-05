@@ -90,21 +90,22 @@ export default class PerformanceMonitor {
    */
   observeRenderTimes() {
     const originalCreateElement = document.createElement;
+    const self = this; // Store reference to 'this'
     document.createElement = function (...args) {
       const startTime = performance.now();
       const element = originalCreateElement.apply(this, args);
       const endTime = performance.now();
 
       // Enregistrer le temps de rendu
-      if (endTime - startTime > this.config.slowRenderThreshold) {
-        this.metrics.renderTimes.push({
+      if (endTime - startTime > self.config.slowRenderThreshold) {
+        self.metrics.renderTimes.push({
           element: args[0],
           time: endTime - startTime,
         });
       }
 
       return element;
-    }.bind(this);
+    };
   }
 
   /**
