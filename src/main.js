@@ -1,12 +1,10 @@
-/**
- * Point d'entrée principal de l'application mserv.wtf
- * Initialise et coordonne tous les modules
- */
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import Config from './config.js';
 import Dashboard from './core/dashboard.js';
 import StorageManager from './utils/storage-manager.js';
 import { detectStorageSupport } from './utils/dom-helpers.js';
-import { Suspense, lazy } from 'react';
+
 class Application {
   constructor() {
     // Configuration globale
@@ -148,10 +146,8 @@ class Application {
    */
   initializeDashboard() {
     try {
-      Suspense(() => {
-        this.dashboard = new Dashboard(this);
-        this.dashboard.initialize();
-      });
+      this.dashboard = new Dashboard(this);
+      this.dashboard.initialize();
     } catch (error) {
       console.error("Erreur lors de l'initialisation du tableau de bord", error);
       this.logError({
@@ -254,7 +250,14 @@ class Application {
 
 // Démarrer l'application une fois le DOM chargé
 document.addEventListener('DOMContentLoaded', () => {
-  window.App = Application.start();
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(
+    <React.StrictMode>
+      <div id="app">
+        {Application.start()}
+      </div>
+    </React.StrictMode>
+  );
 });
 
 export default Application;
